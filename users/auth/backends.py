@@ -15,9 +15,10 @@ class UserAuthModelBackend(ModelBackend):
         except User.DoesNotExist:
             User().set_password(password)
         else:
+            self._update_attempt_meta(request)
             self._check_locked()
             if not user.check_password(password):
-                self._update_tracks(request)
+                self._update_failed_attempts()
                 self._attempts_left()
 
             self._check_restriction(user)
@@ -25,9 +26,13 @@ class UserAuthModelBackend(ModelBackend):
 
             return user
 
-    def _update_tracks(self, request):
-        self.access_tracks.failed_attempts += 1
+    def _update_attempt_meta(self, request):
+        self.access_tracks.user_agent = request.META.get('HTTP_USER_AGENT')
         self.access_tracks.ip_address = request.META.get('REMOTE_ADDR')
+        self.access_tracks.save()
+
+    def _update_failed_attempts(self):
+        self.access_tracks.failed_attempts += 1
         if self.access_tracks.failed_attempts >= MAX_ATTEMPTS:
             self.access_tracks.locked_at = timezone.now()
         self.access_tracks.save()
