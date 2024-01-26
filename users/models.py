@@ -96,3 +96,7 @@ class UserAccessTracks(models.Model):
     def reset_failed_attempts(self):
         self.failed_attempts = 0
         self.save()
+
+    def increase_sign_in_count(self):
+        self.sign_in_count += 1
+        self.save()

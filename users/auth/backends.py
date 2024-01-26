@@ -23,7 +23,7 @@ class UserAuthModelBackend(ModelBackend):
 
             self._check_restriction(user)
             self.access_tracks.reset_failed_attempts()
-
+            self.access_tracks.increase_sign_in_count()
             return user
 
     def _update_attempt_meta(self, request):
