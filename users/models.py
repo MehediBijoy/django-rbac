@@ -40,6 +40,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
+    deprecated_password = models.CharField(max_length=255, null=True)
     type = models.PositiveSmallIntegerField(
         choices=UserType.choices, default=UserType.REGULAR
     )
