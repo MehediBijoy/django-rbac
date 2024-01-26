@@ -70,10 +70,11 @@ class AccessLog(models.Model):
     user = models.OneToOneField(
         User, related_name='access_log', on_delete=models.CASCADE
     )
+    sign_in_count = models.IntegerField(default=0)
     ip_address = models.GenericIPAddressField(null=True)
     failed_attempts = models.IntegerField(default=0)
     locked_at = models.DateTimeField(null=True)
-    log_in_agent = models.CharField(max_length=255, null=True)
+    user_agent = models.CharField(max_length=255, null=True)
 
     class Meta:
         db_table = 'access_logs'
