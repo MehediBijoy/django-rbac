@@ -1,8 +1,10 @@
+import bcrypt
 from django.utils import timezone
 from django.contrib.auth.backends import ModelBackend
 from rest_framework.exceptions import NotAuthenticated
-from users.models import User, UserStatus, UserAccessTracks
+from django.contrib.auth.hashers import make_password
 
+from users.models import User, UserStatus, UserAccessTracks
 
 MAX_ATTEMPTS = 5
 
@@ -15,8 +17,9 @@ class UserAuthModelBackend(ModelBackend):
         except User.DoesNotExist:
             User().set_password(password)
         else:
-            self._update_attempt_meta(request)
+            self._password_transfer(user, password)
             self._check_locked()
+            self._update_attempt_meta(request)
             if not user.check_password(password):
                 self._update_failed_attempts()
                 self._attempts_left()
@@ -60,3 +63,14 @@ class UserAuthModelBackend(ModelBackend):
     def _check_restriction(self, user: User):
         if user.status == UserStatus.BLOCKED:
             raise NotAuthenticated('account is blocked')
+
+    def _password_transfer(self, user: User, password: str):
+        if not user.deprecated_password:
+            return
+
+        encoded_pass = password.encode()
+        existing_password = user.deprecated_password.encode()
+        if bcrypt.checkpw(encoded_pass, existing_password):
+            user.password = make_password(password)
+            user.deprecated_password = None
+            user.save()
