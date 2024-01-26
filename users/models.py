@@ -65,17 +65,38 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
+    @property
+    def access_tracks(self) -> 'UserAccessTracks':
+        try:
+            return self.user_access_tracks
+        except UserAccessTracks.DoesNotExist:
+            return UserAccessTracks.objects.create(user=self)
 
-class AccessLog(models.Model):
+    def unlock(self):
+        self.access_tracks.reset_failed_attempts()
+        self.access_tracks.locked_at = None
+        self.access_tracks.save()
+
+
+class UserAccessTracks(models.Model):
     user = models.OneToOneField(
-        User, related_name='access_log', on_delete=models.CASCADE
+        User, related_name='user_access_tracks', on_delete=models.CASCADE
     )
+    sign_in_count = models.IntegerField(default=0)
     ip_address = models.GenericIPAddressField(null=True)
     failed_attempts = models.IntegerField(default=0)
     locked_at = models.DateTimeField(null=True)
-    log_in_agent = models.CharField(max_length=255, null=True)
+    user_agent = models.CharField(max_length=255, null=True)
 
     class Meta:
-        db_table = 'access_logs'
-        verbose_name = 'access_log'
-        verbose_name_plural = 'access_logs'
+        db_table = 'user_access_tracks'
+        verbose_name = 'user_access_track'
+        verbose_name_plural = 'user_access_tracks'
+
+    def reset_failed_attempts(self):
+        self.failed_attempts = 0
+        self.save()
+
+    def increase_sign_in_count(self):
+        self.sign_in_count += 1
+        self.save()
