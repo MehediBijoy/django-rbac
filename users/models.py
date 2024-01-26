@@ -65,6 +65,25 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
+    @property
+    def tracks(self) -> 'AccessLog':
+        try:
+            return self.access_log
+        except AccessLog.DoesNotExist:
+            return AccessLog.objects.create(user=self)
+
+    @property
+    def failed_attempts(self):
+        return self.tracks.failed_attempts
+
+    @property
+    def sign_in_count(self):
+        return self.tracks.sign_in_count
+
+    @property
+    def locked_at(self):
+        return self.tracks.locked_at
+
 
 class AccessLog(models.Model):
     user = models.OneToOneField(
@@ -80,3 +99,7 @@ class AccessLog(models.Model):
         db_table = 'access_logs'
         verbose_name = 'access_log'
         verbose_name_plural = 'access_logs'
+
+    def reset_failed_attempts(self):
+        self.failed_attempts = 0
+        self.save()
