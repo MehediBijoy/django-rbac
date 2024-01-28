@@ -4,7 +4,7 @@ from django.contrib.auth.backends import ModelBackend
 from rest_framework.exceptions import NotAuthenticated
 from django.contrib.auth.hashers import make_password
 
-from users.models import User, UserStatus, UserAccessTracks
+from users.models import User, UserStatus
 
 MAX_ATTEMPTS = 5
 
@@ -13,7 +13,7 @@ class UserAuthModelBackend(ModelBackend):
     def authenticate(self, request, email=None, password=None):
         try:
             user: User = User._default_manager.get_by_natural_key(email)
-            self.access_tracks: UserAccessTracks = user.access_tracks
+            self.access_tracks = user.access_tracks
         except User.DoesNotExist:
             User().set_password(password)
         else:
