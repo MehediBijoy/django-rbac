@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
+from .mixins.otp_mixin import OtpMixin
 from .user_access_track import UserAccessTrack
 
 
@@ -40,7 +41,7 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **kwargs)
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin, OtpMixin):
     email = models.EmailField(max_length=255, unique=True)
     deprecated_password = models.CharField(max_length=255, null=True)
     type = models.PositiveSmallIntegerField(
