@@ -29,7 +29,7 @@ class OtpMixin(models.Model):
     def switch_otp(self, token: str, active=False):
         if self.verify_otp(token):
             self.is_otp_active = active
-            self.save(update_fields=['otp_secret'])
+            self.save(update_fields=['is_otp_active'])
             return True
 
         return False
