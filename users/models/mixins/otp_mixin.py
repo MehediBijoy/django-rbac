@@ -4,7 +4,7 @@ from django.db import models
 from config import ENV
 
 
-class OtpMixin(models.Model):
+class OneTimePasswordMixin(models.Model):
     otp_secret = models.CharField(max_length=255, null=True)
     is_otp_active = models.BooleanField(default=False)
 
