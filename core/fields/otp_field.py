@@ -9,9 +9,7 @@ class OneTimePasswordValidator:
     def __call__(self, value, serializer_field):
         user: User = serializer_field.context['request'].user
         if not user.verify_otp(value):
-            raise serializers.ValidationError(
-                {'mfa_code': '2FA code is invalid'}
-            )
+            raise serializers.ValidationError('2FA code is invalid')
 
 
 class OneTimePasswordField(serializers.CharField):
@@ -19,7 +17,6 @@ class OneTimePasswordField(serializers.CharField):
         kwargs.setdefault('min_length', 6)
         kwargs.setdefault('max_length', 6)
         kwargs.setdefault('write_only', True)
-        kwargs.setdefault('required', False)
 
         if auto_otp_validate:
             validators: list = kwargs.get('validators', [])

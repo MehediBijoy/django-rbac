@@ -6,7 +6,7 @@ from core.fields import OneTimePasswordField
 
 
 class LoginSerializer(TokenObtainPairSerializer):
-    mfa_code = OneTimePasswordField(auto_otp_validate=False)
+    mfa_code = OneTimePasswordField(auto_otp_validate=False, required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
