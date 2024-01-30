@@ -32,7 +32,7 @@ class OneTimePasswordMixin(models.Model):
         """
         Switch OTP status.
         """
-        if self.verify_otp(token):
+        if self.verify_mfa_token(token):
             self.is_mfa_active = active
             self.save(update_fields=['is_mfa_active'])
             return True
