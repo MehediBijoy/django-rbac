@@ -9,6 +9,7 @@ class OneTimePasswordValidator:
 
     def __call__(self, value, serializer_field):
         user: User = serializer_field.context['request'].user
+
         if not user.verify_mfa_token(value):
             raise serializers.ValidationError(_('2FA code is invalid'))
 
