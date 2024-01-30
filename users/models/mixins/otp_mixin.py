@@ -5,17 +5,17 @@ from config import ENV
 
 
 class OneTimePasswordMixin(models.Model):
-    otp_secret = models.CharField(max_length=255, null=True)
-    is_otp_active = models.BooleanField(default=False)
+    mfa_secret = models.CharField(max_length=255, null=True)
+    is_mfa_active = models.BooleanField(default=False)
 
     def generate_otp_uri(self) -> str:
         """
         Generate OTP provisioning URI.
         https://stefansundin.github.io/2fa-qr/ Test uri through the url
         """
-        if not self.otp_secret:
-            self.otp_secret = self.__get_secret()
-            self.save(update_fields=['otp_secret'])
+        if not self.mfa_secret:
+            self.mfa_secret = self.__get_secret()
+            self.save(update_fields=['mfa_secret'])
 
         return self.__get_totp().provisioning_uri(name=self.email, issuer_name=ENV.title)
 
@@ -23,7 +23,7 @@ class OneTimePasswordMixin(models.Model):
         """
         Verify OTP token.
         """
-        if token is None or self.otp_secret is None:
+        if token is None or self.mfa_secret is None:
             return False
 
         return self.__get_totp().verify(token)
@@ -33,8 +33,8 @@ class OneTimePasswordMixin(models.Model):
         Switch OTP status.
         """
         if self.verify_otp(token):
-            self.is_otp_active = active
-            self.save(update_fields=['is_otp_active'])
+            self.is_mfa_active = active
+            self.save(update_fields=['is_mfa_active'])
             return True
 
         return False
@@ -49,7 +49,7 @@ class OneTimePasswordMixin(models.Model):
         """
         Get TOTP object.
         """
-        return pyotp.TOTP(self.otp_secret)
+        return pyotp.TOTP(self.mfa_secret)
 
     class Meta:
         abstract = True

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
 
 from users.models import User
 
@@ -9,7 +10,7 @@ class OneTimePasswordValidator:
     def __call__(self, value, serializer_field):
         user: User = serializer_field.context['request'].user
         if not user.verify_otp(value):
-            raise serializers.ValidationError('2FA code is invalid')
+            raise serializers.ValidationError(_('2FA code is invalid'))
 
 
 class OneTimePasswordField(serializers.CharField):
