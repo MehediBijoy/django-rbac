@@ -15,7 +15,7 @@ class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
 
-        if not self.user.is_otp_active:
+        if not self.user.is_mfa_active:
             return data
 
         if not self.user.verify_otp(attrs.get('mfa_code')):
