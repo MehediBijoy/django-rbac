@@ -3,6 +3,8 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
 )
 
+from .auth.login import LoginSerializer
+
 urlpatterns = [
-    path('auth/login', TokenObtainPairView.as_view(), name='auth/login'),
+    path('auth/login', TokenObtainPairView.as_view(serializer_class=LoginSerializer)),
 ]

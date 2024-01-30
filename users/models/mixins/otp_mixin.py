@@ -24,7 +24,7 @@ class OneTimePasswordMixin(models.Model):
         Verify OTP token.
         """
         if token is None or self.otp_secret is None:
-            raise ValueError("Token or OTP secret is None")
+            return False
 
         return self.__get_totp().verify(token)
 
