@@ -2,11 +2,11 @@ from rest_framework.exceptions import NotAuthenticated
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from users.models import User
-from core.fields import OneTimePasswordFiled
+from core.fields import OneTimePasswordField
 
 
 class LoginSerializer(TokenObtainPairSerializer):
-    mfa_code = OneTimePasswordFiled(auto_otp_validate=False)
+    mfa_code = OneTimePasswordField(auto_otp_validate=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

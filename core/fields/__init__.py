@@ -1,5 +1,5 @@
-from .otp_field import OneTimePasswordFiled
+from .otp_field import OneTimePasswordField
 
 __all__ = [
-    'OneTimePasswordFiled',
+    'OneTimePasswordField',
 ]
