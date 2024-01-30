@@ -8,7 +8,7 @@ class OneTimePasswordMixin(models.Model):
     mfa_secret = models.CharField(max_length=255, null=True)
     is_mfa_active = models.BooleanField(default=False)
 
-    def generate_otp_uri(self) -> str:
+    def get_mfa_uri(self) -> str:
         """
         Generate OTP provisioning URI.
         https://stefansundin.github.io/2fa-qr/ Test uri through the url
@@ -19,7 +19,7 @@ class OneTimePasswordMixin(models.Model):
 
         return self.__get_totp().provisioning_uri(name=self.email, issuer_name=ENV.title)
 
-    def verify_otp(self, token: str) -> bool:
+    def verify_mfa_token(self, token: str) -> bool:
         """
         Verify OTP token.
         """
@@ -28,7 +28,7 @@ class OneTimePasswordMixin(models.Model):
 
         return self.__get_totp().verify(token)
 
-    def switch_otp(self, token: str, active: bool = False) -> bool:
+    def switch_mfa(self, token: str, active: bool = False) -> bool:
         """
         Switch OTP status.
         """

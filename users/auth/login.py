@@ -18,7 +18,7 @@ class LoginSerializer(TokenObtainPairSerializer):
         if not self.user.is_mfa_active:
             return data
 
-        if not self.user.verify_otp(attrs.get('mfa_code')):
+        if not self.user.verify_mfa_token(attrs.get('mfa_code')):
             raise NotAuthenticated(code='005', detail='MFA code invalid')
 
         return data
