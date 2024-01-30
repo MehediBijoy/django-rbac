@@ -5,36 +5,36 @@ from config import ENV
 
 
 class OneTimePasswordMixin(models.Model):
-    mfa_secret = models.CharField(max_length=255, null=True)
-    is_mfa_active = models.BooleanField(default=False)
+    google_secret = models.CharField(max_length=255, null=True)
+    google_mfa_activated = models.BooleanField(default=False)
 
-    def get_mfa_uri(self) -> str:
+    def get_otp_uri(self) -> str:
         """
         Generate OTP provisioning URI.
         https://stefansundin.github.io/2fa-qr/ Test uri through the url
         """
-        if not self.mfa_secret:
-            self.mfa_secret = self.__get_secret()
-            self.save(update_fields=['mfa_secret'])
+        if not self.google_secret:
+            self.google_secret = self.__get_secret()
+            self.save(update_fields=['google_secret'])
 
         return self.__get_totp().provisioning_uri(name=self.email, issuer_name=ENV.title)
 
-    def verify_mfa_token(self, token: str) -> bool:
+    def verify_otp_token(self, token: str) -> bool:
         """
         Verify OTP token.
         """
-        if token is None or self.mfa_secret is None:
+        if token is None or self.google_secret is None:
             return False
 
         return self.__get_totp().verify(token)
 
-    def switch_mfa(self, token: str, active: bool = False) -> bool:
+    def change_otp_state(self, token: str, active: bool = False) -> bool:
         """
         Switch OTP status.
         """
-        if self.verify_mfa_token(token):
-            self.is_mfa_active = active
-            self.save(update_fields=['is_mfa_active'])
+        if self.verify_otp_token(token):
+            self.google_mfa_activated = active
+            self.save(update_fields=['google_mfa_activated'])
             return True
 
         return False
@@ -49,7 +49,7 @@ class OneTimePasswordMixin(models.Model):
         """
         Get TOTP object.
         """
-        return pyotp.TOTP(self.mfa_secret)
+        return pyotp.TOTP(self.google_secret)
 
     class Meta:
         abstract = True

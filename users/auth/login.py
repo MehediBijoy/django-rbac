@@ -15,10 +15,10 @@ class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
 
-        if not self.user.is_mfa_active:
+        if not self.user.google_mfa_activated:
             return data
 
-        if not self.user.verify_mfa_token(attrs.get('mfa_code')):
+        if not self.user.verify_otp_token(attrs.get('mfa_code')):
             raise NotAuthenticated(code='005', detail='MFA code invalid')
 
         return data
