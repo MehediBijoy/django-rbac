@@ -44,12 +44,13 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin, OneTimePasswordMixin):
     email = models.EmailField(max_length=255, unique=True)
     deprecated_password = models.CharField(max_length=255, null=True)
-    type = models.PositiveSmallIntegerField(
+    user_type = models.PositiveSmallIntegerField(
         choices=UserType.choices, default=UserType.REGULAR
     )
     status = models.PositiveSmallIntegerField(
         choices=UserStatus.choices, default=UserStatus.ACTIVE
     )
+    status_reason = models.TextField(null=True)
     role = models.PositiveSmallIntegerField(
         choices=UserRole.choices, default=UserRole.USER
     )
