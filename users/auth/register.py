@@ -1,8 +1,7 @@
-from typing import OrderedDict
 from rest_framework import status
 from rest_framework import serializers
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.generics import CreateAPIView
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 
@@ -31,7 +30,7 @@ class RegisterSerializer(serializers.Serializer):
 
     user_type = serializers.CharField(required=False, allow_null=True)
 
-    def validate(self, attrs: OrderedDict):
+    def validate(self, attrs):
         password_confirmation = attrs.pop('password_confirmation')
 
         if attrs.get('password') != password_confirmation:
@@ -56,21 +55,17 @@ class RegisterSerializer(serializers.Serializer):
         return User.objects.create_user(**validated_data)
 
 
-class RegisterAPIView(CreateAPIView):
-    serializer_class = RegisterSerializer
-    queryset = User.objects.all()
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+class RegisterAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        serializer.save()
 
-        sign_in = LoginSerializer(
-            data={'email': user.email,
-                  'password': serializer.validated_data.get('password')
-                  }, context=self.get_serializer_context()
+        login_serializer = LoginSerializer(
+            data=serializer.validated_data,
+            context={'request': request}
         )
 
-        sign_in.is_valid(raise_exception=True)
+        login_serializer.is_valid(raise_exception=True)
 
-        return Response(data=sign_in.validated_data, status=status.HTTP_201_CREATED)
+        return Response(data=login_serializer.validated_data, status=status.HTTP_201_CREATED)
