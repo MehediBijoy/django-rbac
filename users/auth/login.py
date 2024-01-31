@@ -3,6 +3,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from users.models import User
 from core.fields import OneTimePasswordField
+from users.serializers import UserSerializer
 
 
 class LoginSerializer(TokenObtainPairSerializer):
@@ -14,6 +15,9 @@ class LoginSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
+        del data['refresh']
+        data['token'] = data.pop('access')
+        data['user'] = UserSerializer(instance=self.user).data
 
         if not self.user.google_mfa_activated:
             return data
