@@ -1,5 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 
 from .mixins.otp_mixin import OneTimePasswordMixin
 from .user_access_track import UserAccessTrack
@@ -16,7 +20,6 @@ class UserRole(models.IntegerChoices):
     USER = 0, 'user'
     ADMIN = 1, 'admin'
     SUPER_ADMIN = 2, 'super_admin'
-    TOP_MANAGER = 3, 'top_manager'
 
 
 class UserType(models.IntegerChoices):
@@ -68,7 +71,7 @@ class User(AbstractBaseUser, PermissionsMixin, OneTimePasswordMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    objects = UserManager()
+    objects: UserManager = UserManager()
 
     @property
     def access_tracks(self) -> UserAccessTrack:

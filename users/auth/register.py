@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 
-from users.models import User, UserType
+from users.models import User
 from .login import LoginSerializer
 
 
@@ -28,9 +28,7 @@ class RegisterSerializer(serializers.Serializer):
                'placeholder': 'password confirmation'}
     )
 
-    user_type = serializers.CharField(required=False, allow_null=True)
-
-    def validate(self, attrs):
+    def validate(self, attrs: dict):
         password_confirmation = attrs.pop('password_confirmation')
 
         if attrs.get('password') != password_confirmation:
@@ -39,17 +37,6 @@ class RegisterSerializer(serializers.Serializer):
             )
 
         return super().validate(attrs)
-
-    def validate_user_type(self, value: str):
-        if not value:
-            return None
-
-        if not value.upper() in UserType.names:
-            raise serializers.ValidationError(
-                f'type should be one of [{", ".join(UserType.labels)}]'
-            )
-
-        return UserType[value.upper()]
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
