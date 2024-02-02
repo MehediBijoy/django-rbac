@@ -15,9 +15,13 @@ class LoginSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
+
+        # we are not using refresh token now
+        # that's why it excluded from response
         del data['refresh']
-        data['token'] = data.pop('access')
+
         data['user'] = UserSerializer(instance=self.user).data
+        data['token'] = data.pop('access')
 
         if not self.user.google_mfa_activated:
             return data
