@@ -1,5 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils.crypto import get_random_string
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 
 from .mixins.otp_mixin import OneTimePasswordMixin
 from .user_access_track import UserAccessTrack
@@ -16,7 +21,6 @@ class UserRole(models.IntegerChoices):
     USER = 0, 'user'
     ADMIN = 1, 'admin'
     SUPER_ADMIN = 2, 'super_admin'
-    TOP_MANAGER = 3, 'top_manager'
 
 
 class UserType(models.IntegerChoices):
@@ -30,10 +34,17 @@ class UserManager(BaseUserManager):
     def create_user(self, email, password, **kwargs):
         if not email:
             raise ValueError('User must have email')
+
         email = self.normalize_email(email)
-        user = self.model(email=email, **kwargs)
+        user = self.model(
+            email=email,
+            confirmation_token=get_random_string(20),
+            **kwargs
+        )
+
         user.set_password(password)
         user.save(using=self._db)
+
         return user
 
     def create_superuser(self, email, password, **kwargs):
@@ -43,13 +54,16 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin, OneTimePasswordMixin):
     email = models.EmailField(max_length=255, unique=True)
-    deprecated_password = models.CharField(max_length=255, null=True)
-    type = models.PositiveSmallIntegerField(
+    email_confirmed = models.BooleanField(default=False)
+    confirmation_token = models.CharField(max_length=255, null=True)
+    confirmed_at = models.DateTimeField(null=True)
+    user_type = models.PositiveSmallIntegerField(
         choices=UserType.choices, default=UserType.REGULAR
     )
     status = models.PositiveSmallIntegerField(
         choices=UserStatus.choices, default=UserStatus.ACTIVE
     )
+    status_reason = models.TextField(null=True)
     role = models.PositiveSmallIntegerField(
         choices=UserRole.choices, default=UserRole.USER
     )
@@ -67,7 +81,7 @@ class User(AbstractBaseUser, PermissionsMixin, OneTimePasswordMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    objects = UserManager()
+    objects: UserManager = UserManager()
 
     @property
     def access_tracks(self) -> UserAccessTrack:

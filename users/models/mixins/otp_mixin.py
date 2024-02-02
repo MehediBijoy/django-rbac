@@ -5,36 +5,36 @@ from config import ENV
 
 
 class OneTimePasswordMixin(models.Model):
-    otp_secret = models.CharField(max_length=255, null=True)
-    is_otp_active = models.BooleanField(default=False)
+    google_secret = models.CharField(max_length=255, null=True)
+    google_mfa_activated = models.BooleanField(default=False)
 
-    def generate_otp_uri(self) -> str:
+    def get_otp_uri(self) -> str:
         """
         Generate OTP provisioning URI.
         https://stefansundin.github.io/2fa-qr/ Test uri through the url
         """
-        if not self.otp_secret:
-            self.otp_secret = self.__get_secret()
-            self.save(update_fields=['otp_secret'])
+        if not self.google_secret:
+            self.google_secret = self.__get_secret()
+            self.save(update_fields=['google_secret'])
 
         return self.__get_totp().provisioning_uri(name=self.email, issuer_name=ENV.title)
 
-    def verify_otp(self, token: str) -> bool:
+    def verify_otp_token(self, token: str) -> bool:
         """
         Verify OTP token.
         """
-        if token is None or self.otp_secret is None:
-            raise ValueError("Token or OTP secret is None")
+        if token is None or self.google_secret is None:
+            return False
 
         return self.__get_totp().verify(token)
 
-    def switch_otp(self, token: str, active: bool = False) -> bool:
+    def change_otp_state(self, token: str, active: bool = False) -> bool:
         """
         Switch OTP status.
         """
-        if self.verify_otp(token):
-            self.is_otp_active = active
-            self.save(update_fields=['is_otp_active'])
+        if self.verify_otp_token(token):
+            self.google_mfa_activated = active
+            self.save(update_fields=['google_mfa_activated'])
             return True
 
         return False
@@ -49,7 +49,7 @@ class OneTimePasswordMixin(models.Model):
         """
         Get TOTP object.
         """
-        return pyotp.TOTP(self.otp_secret)
+        return pyotp.TOTP(self.google_secret)
 
     class Meta:
         abstract = True
