@@ -46,7 +46,10 @@ class RegisterAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        user: User = serializer.save()
+
+        # sent confirmation token to user though email
+        user.sent_email_confirmation()
 
         login_serializer = LoginSerializer(
             data=serializer.validated_data,
