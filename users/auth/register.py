@@ -49,7 +49,7 @@ class RegisterAPIView(APIView):
         user: User = serializer.save()
 
         # sent confirmation token to user though email
-        user.sent_email_confirmation()
+        user.send_email_confirmation()
 
         login_serializer = LoginSerializer(
             data=serializer.validated_data,

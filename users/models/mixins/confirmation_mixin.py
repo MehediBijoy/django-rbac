@@ -16,7 +16,7 @@ class ConfirmationMixin(models.Model):
     class Meta:
         abstract = True
 
-    def sent_email_confirmation(self):
+    def send_email_confirmation(self):
         self.confirmation_sent_at = timezone.now()
         self.confirmation_token = get_random_string(25)
         self.save(update_fields=['confirmation_sent_at', 'confirmation_token'])
@@ -25,7 +25,7 @@ class ConfirmationMixin(models.Model):
 
     def resend_email_confirmation(self):
         self.__check_prepend_generation()
-        self.sent_email_confirmation()
+        self.send_email_confirmation()
 
     def email_change_request(self, email: str):
         if not self.email_confirmed:
@@ -35,7 +35,7 @@ class ConfirmationMixin(models.Model):
         self.unconfirmed_email = email
         self.save(update_fields=['unconfirmed_email'])
 
-        self.sent_email_confirmation()
+        self.send_email_confirmation()
 
     @property
     def is_confirmation_token_valid(self):
