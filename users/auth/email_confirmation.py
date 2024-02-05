@@ -2,8 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import User
+from users.serializers import UserSerializer
 
 
 class EmailConfirmationAPIView(APIView):
@@ -17,7 +19,10 @@ class EmailConfirmationAPIView(APIView):
         except:
             raise ValidationError('Invalid confirmation token')
         else:
-            # implement later
-            pass
+            user.confirm()
+            ref_token = RefreshToken.for_user(user)
 
-        return Response('success')
+        return Response(data={
+            'user': UserSerializer(instance=user).data,
+            'token': str(ref_token.access_token)
+        })

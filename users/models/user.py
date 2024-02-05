@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils.crypto import get_random_string
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -39,7 +38,6 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(
             email=email,
-            confirmation_token=get_random_string(20),
             **kwargs
         )
 
