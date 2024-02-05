@@ -6,6 +6,7 @@ from django.contrib.auth.models import (
 )
 
 from .mixins.otp_mixin import OneTimePasswordMixin
+from .mixins.confirmation_mixin import ConfirmationMixin
 from .user_access_track import UserAccessTrack
 
 
@@ -33,10 +34,16 @@ class UserManager(BaseUserManager):
     def create_user(self, email, password, **kwargs):
         if not email:
             raise ValueError('User must have email')
+
         email = self.normalize_email(email)
-        user = self.model(email=email, **kwargs)
+        user = self.model(
+            email=email,
+            **kwargs
+        )
+
         user.set_password(password)
         user.save(using=self._db)
+
         return user
 
     def create_superuser(self, email, password, **kwargs):
@@ -44,9 +51,14 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **kwargs)
 
 
-class User(AbstractBaseUser, PermissionsMixin, OneTimePasswordMixin):
+class User(
+    AbstractBaseUser,
+    PermissionsMixin,
+    OneTimePasswordMixin,
+    ConfirmationMixin
+):
     email = models.EmailField(max_length=255, unique=True)
-    deprecated_password = models.CharField(max_length=255, null=True)
+    confirmed_at = models.DateTimeField(null=True)
     user_type = models.PositiveSmallIntegerField(
         choices=UserType.choices, default=UserType.REGULAR
     )
@@ -71,7 +83,7 @@ class User(AbstractBaseUser, PermissionsMixin, OneTimePasswordMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    objects: UserManager = UserManager()
+    objects = UserManager()
 
     @property
     def access_tracks(self) -> UserAccessTrack:
