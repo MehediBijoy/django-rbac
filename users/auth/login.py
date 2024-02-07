@@ -2,8 +2,8 @@ from rest_framework.exceptions import NotAuthenticated
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from users.models import User
-from core.fields import OneTimePasswordField
 from users.serializers import UserSerializer
+from core.fields import OneTimePasswordField
 
 
 class LoginSerializer(TokenObtainPairSerializer):
