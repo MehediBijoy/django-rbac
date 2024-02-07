@@ -51,8 +51,8 @@ class TurnstileCaptchaValidator:
 
             """
             Here we merge with default response
-            If success false then default response success field only
-            update others keep as it is.
+            original response merge with default_response
+            otherwise keep as it is
             """
             default_response.update(response.json())
 
