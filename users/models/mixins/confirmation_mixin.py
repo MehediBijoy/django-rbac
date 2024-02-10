@@ -9,6 +9,7 @@ TOKEN_VALID_DURATION = 15
 
 class ConfirmationMixin(models.Model):
     email_confirmed = models.BooleanField(default=False)
+    confirmed_at = models.DateTimeField(null=True)
     confirmation_token = models.CharField(max_length=255, null=True)
     confirmation_sent_at = models.DateTimeField(null=True)
     unconfirmed_email = models.EmailField(null=True)
@@ -21,7 +22,7 @@ class ConfirmationMixin(models.Model):
         self.confirmation_token = get_random_string(25)
         self.save(update_fields=['confirmation_sent_at', 'confirmation_token'])
 
-        self.send_mail()
+        self.__send_mail()
 
     def resend_email_confirmation(self):
         self.__check_prepend_generation()
@@ -37,16 +38,8 @@ class ConfirmationMixin(models.Model):
 
         self.send_email_confirmation()
 
-    @property
-    def is_confirmation_token_valid(self):
-        if self.confirmation_sent_at is None:
-            return False
-
-        diff = timezone.now() - self.confirmation_sent_at
-        return diff <= timedelta(minutes=TOKEN_VALID_DURATION)
-
     def confirm(self):
-        if not self.is_confirmation_token_valid:
+        if not self.__is_token_valid:
             raise ValidationError('confirmation token is expired')
 
         update_fields = []
@@ -57,26 +50,36 @@ class ConfirmationMixin(models.Model):
             update_fields.extend(['email', 'unconfirmed_email'])
 
         self.email_confirmed = True
+        self.confirmed_at = timezone.now()
         self.confirmation_token = None
         self.confirmation_sent_at = None
 
         update_fields.extend([
             'email_confirmed',
+            'confirmed_at',
             'confirmation_sent_at',
             'confirmation_token'
         ])
 
         self.save(update_fields=update_fields)
 
-    def send_mail(self):
+    def __send_mail(self):
         """
         If we have unconfirmed email Then email send to unconfirmed email
         otherwise send to regular email
         """
 
     def __check_prepend_generation(self):
-        if self.is_confirmation_token_valid:
+        if self.__is_token_valid:
             raise ValidationError(
                 'We already sent confirmation token to your email, Please wait %s minutes'
                 % TOKEN_VALID_DURATION
             )
+
+    @property
+    def __is_token_valid(self):
+        if self.confirmation_sent_at is None:
+            return False
+
+        diff = timezone.now() - self.confirmation_sent_at
+        return diff <= timedelta(minutes=TOKEN_VALID_DURATION)

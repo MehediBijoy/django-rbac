@@ -55,7 +55,7 @@ class User(
     AbstractBaseUser,
     PermissionsMixin,
     OneTimePasswordMixin,
-    ConfirmationMixin
+    ConfirmationMixin,
 ):
     email = models.EmailField(max_length=255, unique=True)
     confirmed_at = models.DateTimeField(null=True)
