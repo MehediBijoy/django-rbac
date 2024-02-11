@@ -3,10 +3,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import AccessToken
 
 from users.models import User
-from users.serializers import UserSerializer
+from users.helper import UserAuthResponse
 
 
 class EmailConfirmationAPIView(APIView):
@@ -19,20 +18,11 @@ class EmailConfirmationAPIView(APIView):
 
         try:
             user = User.objects.get(confirmation_token=token)
+            user.confirm()
         except:
             raise ValidationError('Invalid email confirmation token')
-        else:
-            user.confirm()
-            """
-            If we want to add extra claim here 
-            we can simply add ref_token['role'] = user.role
-            """
-            ref_token = AccessToken.for_user(user)
 
-        return Response(data={
-            'user': UserSerializer(instance=user).data,
-            'token': str(ref_token)
-        })
+        return Response(UserAuthResponse(user).data)
 
 
 class ResendEmailConfirmation(APIView):

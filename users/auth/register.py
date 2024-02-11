@@ -6,7 +6,7 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 
 from users.models import User
-from .login import LoginSerializer
+from users.helper import UserAuthResponse
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -43,19 +43,17 @@ class RegisterSerializer(serializers.Serializer):
 
 
 class RegisterAPIView(APIView):
+    permission_classes = []
+
     def post(self, request, *args, **kwargs):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user: User = serializer.save()
+        user = serializer.save()
 
         # sent confirmation token to user though email
         user.send_email_confirmation()
 
-        login_serializer = LoginSerializer(
-            data=serializer.validated_data,
-            context={'request': request}
+        return Response(
+            data=UserAuthResponse(user=user).data,
+            status=status.HTTP_201_CREATED,
         )
-
-        login_serializer.is_valid(raise_exception=True)
-
-        return Response(data=login_serializer.validated_data, status=status.HTTP_201_CREATED)
