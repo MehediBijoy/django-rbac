@@ -5,7 +5,7 @@ from rest_framework import mixins, permissions
 from rest_framework.viewsets import GenericViewSet
 
 from .models import User
-from .mixins import RoleBasedAccessControlMixin
+from .mixins import ViewsetAccessControlMixin
 from .serializers import UserSerializer, ChangeEmailSerializer
 from .permissions import IsOwnerOrSuperAdmin
 
@@ -14,14 +14,18 @@ class UserViewSet(
     mixins.ListModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
-    RoleBasedAccessControlMixin,
+    ViewsetAccessControlMixin,
     GenericViewSet,
 ):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrSuperAdmin]
 
-    admin_only_actions = ['list']
+    # admin_only_actions = ['list']
+    unauthorized_actions = ['list']
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @action(detail=True, methods=['post'])
     def email_change(self, request: Request, *args, **kwargs):
