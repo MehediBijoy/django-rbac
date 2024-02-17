@@ -5,7 +5,7 @@ class OrderingFilter(filters.OrderingFilter):
     ordering_reference_fields = []
     ordering_param = 'sort_by'
     ordering_symbol_param = 'sort_order'
-    ordering_lookups = {}
+    ordering_lookups_map = {}
 
     def get_ordering(self, request, queryset, view):
         sort_by = request.query_params.get(self.ordering_param)
@@ -40,7 +40,7 @@ class OrderingFilter(filters.OrderingFilter):
                 ordering_lookups[field_name] = self.extract_source_key(
                     field.source.replace('.', '__') or field_name
                 )
-        ordering_lookups.update(self.ordering_lookups)
+        ordering_lookups.update(self.ordering_lookups_map)
         return ordering_lookups
 
     def map_fields_with_lookups(self, queryset, fields, view, request):
