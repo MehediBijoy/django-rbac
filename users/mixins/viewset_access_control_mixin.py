@@ -1,9 +1,9 @@
 from rest_framework import permissions
 
-from .permissions import IsSafeAdmin, IsSuperAdmin
+from ..permissions import IsSafeAdmin, IsSuperAdmin
 
 
-class RoleBasedAccessControlMixin:
+class ViewsetAccessControlMixin:
     admin_only_actions: list[str] = []
     super_admin_only_action: list[str] = []
     unauthorized_actions: list[str] = []

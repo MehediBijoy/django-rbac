@@ -9,7 +9,7 @@ from .auth.profile import Profile
 from .auth.register import RegisterAPIView
 from .auth.email_confirmation import EmailConfirmationAPIView, ResendEmailConfirmation
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
 router.register('', UserViewSet)
 
 urlpatterns = [

@@ -155,6 +155,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'EXCEPTION_HANDLER': 'core.exception.exception_handler',
+    'DEFAULT_PAGINATION_CLASS': 'core.pagination.PageLimitPagination'
 }
 
 SIMPLE_JWT = {
