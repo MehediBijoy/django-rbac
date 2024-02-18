@@ -157,6 +157,7 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'core.exception.exception_handler',
     'DEFAULT_PAGINATION_CLASS': 'core.pagination.PageLimitPagination',
     'DEFAULT_FILTER_BACKENDS': [
+        'core.filters.SearchFilter',
         'core.filters.OrderingFilter',
     ],
 }

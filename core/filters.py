@@ -43,19 +43,18 @@ class OrderingFilter(filters.OrderingFilter):
         ordering_lookups.update(self.ordering_lookups_map)
         return ordering_lookups
 
-    def map_fields_with_lookups(self, queryset, fields, view, request):
+    def map_fields_with_lookups(self, queryset, fields: list[str], view, request):
         lookups = self.get_default_fields_lookups(
             queryset, view, {'request': request}
         )
 
-        def trans_keys(key):
+        def trans_keys(key: str):
             prefix = '-' if key.startswith('-') else ''
-            key = key.removeprefix('-')
-            return prefix + lookups[key]
+            return prefix + lookups[key.lstrip('-')]
 
         return [
             trans_keys(field) for field in fields
-            if field.removeprefix('-') in lookups
+            if field.lstrip('-') in lookups
         ]
 
     def extract_source_key(self, value: str):
@@ -68,8 +67,12 @@ class OrderingFilter(filters.OrderingFilter):
             self.ordering_symbol_param, 'asc'
         )
 
-        value = value.removeprefix('-')
+        value = value.lstrip('-')
         if sort_order.lower() == 'desc':
             return f'-{value}'
 
         return value
+
+
+class SearchFilter(filters.SearchFilter):
+    search_param = 'search'

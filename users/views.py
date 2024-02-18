@@ -20,6 +20,7 @@ class UserViewSet(
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrSuperAdmin]
+    search_fields = ['email', 'status_reason']
 
     # admin_only_actions = ['list']
     unauthorized_actions = ['list']
