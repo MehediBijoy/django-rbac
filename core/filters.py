@@ -1,11 +1,42 @@
 from rest_framework import filters
 
 
-class OrderingFilter(filters.OrderingFilter):
+class DefaultFieldExtractMixin:
+
+    def get_default_fields_lookups(self, queryset, view, context={}) -> dict[str, str]:
+        serializer_class = getattr(view, 'serializer_class', None)
+        model_class = queryset.model
+        model_property_names = [
+            attr for attr in dir(model_class)
+            if isinstance(getattr(model_class, attr), property) and attr != 'pk'
+        ]
+
+        fields_lookups = dict()
+        for field_name, field in serializer_class(context=context).fields.items():
+            if (
+                not getattr(field, 'write_only', False) and
+                not field.source == '*' and
+                field.source not in model_property_names
+            ):
+                fields_lookups[field_name] = self.extract_source_key(
+                    field.source.replace('.', '__') or field_name
+                )
+
+        return fields_lookups
+
+    def extract_source_key(self, value: str):
+        if value.startswith('get_') and value.endswith('_display'):
+            return value.removeprefix('get_').removesuffix('_display')
+        return value
+
+
+class OrderingFilter(
+    DefaultFieldExtractMixin,
+    filters.OrderingFilter
+):
     ordering_reference_fields = []
     ordering_param = 'sort_by'
     ordering_symbol_param = 'sort_order'
-    ordering_lookups_map = {}
 
     def get_ordering(self, request, queryset, view):
         sort_by = request.query_params.get(self.ordering_param)
@@ -22,31 +53,17 @@ class OrderingFilter(filters.OrderingFilter):
 
         return self.get_default_ordering(view)
 
-    def get_default_fields_lookups(self, queryset, view, context={}) -> dict[str, tuple]:
-        serializer_class = getattr(view, 'serializer_class', None)
-        model_class = queryset.model
-        model_property_names = [
-            attr for attr in dir(model_class)
-            if isinstance(getattr(model_class, attr), property) and attr != 'pk'
-        ]
-
-        ordering_lookups = dict()
-        for field_name, field in serializer_class(context=context).fields.items():
-            if (
-                not getattr(field, 'write_only', False) and
-                not field.source == '*' and
-                field.source not in model_property_names
-            ):
-                ordering_lookups[field_name] = self.extract_source_key(
-                    field.source.replace('.', '__') or field_name
-                )
-        ordering_lookups.update(self.ordering_lookups_map)
-        return ordering_lookups
-
     def map_fields_with_lookups(self, queryset, fields: list[str], view, request):
         lookups = self.get_default_fields_lookups(
             queryset, view, {'request': request}
         )
+
+        # we can add additional lookup for ordering it should be dict type
+        # Example: ordering_lookups_map={'sign_in_count': 'user_access_tracks__sign_in_count'}
+        # now If we add query params ?sort_by=sign_in_count it looking for user_access_tracks__sign_in_count
+        # For first level of serializer all fields work auto
+        ordering_lookups_map = self.get_ordering_lookups_map(view)
+        lookups.update(ordering_lookups_map)
 
         def trans_keys(key: str):
             prefix = '-' if key.startswith('-') else ''
@@ -56,11 +73,6 @@ class OrderingFilter(filters.OrderingFilter):
             trans_keys(field) for field in fields
             if field.lstrip('-') in lookups
         ]
-
-    def extract_source_key(self, value: str):
-        if value.startswith('get_') and value.endswith('_display'):
-            return value.removeprefix('get_').removesuffix('_display')
-        return value
 
     def get_odering_symbol_format(self, request, value: str):
         sort_order: str = request.query_params.get(
@@ -73,6 +85,32 @@ class OrderingFilter(filters.OrderingFilter):
 
         return value
 
+    def get_ordering_lookups_map(self, view) -> dict[str, str]:
+        return getattr(view, 'ordering_lookups_map', {})
 
-class SearchFilter(filters.SearchFilter):
+
+class SearchFilter(
+    DefaultFieldExtractMixin,
+    filters.SearchFilter
+):
     search_param = 'search'
+
+    def map_fields_with_lookups(self, queryset, fields: dict[str, str], view, request):
+        lookups = self.get_default_fields_lookups(
+            queryset, view, {'request': request}
+        )
+
+        return [
+            (lookups[key], value) for key, value in fields.items()
+            if key in lookups
+        ]
+
+    def filter_queryset(self, request, queryset, view):
+        params = request.query_params
+        query_fields = self.map_fields_with_lookups(
+            queryset, params, view, request
+        )
+        if query_fields:
+            return queryset.filter(**dict(query_fields))
+
+        return super().filter_queryset(request, queryset, view)
