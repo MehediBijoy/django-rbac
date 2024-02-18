@@ -57,12 +57,13 @@ class OrderingFilter(
             queryset, view, {'request': request}
         )
 
-        # we can add additional lookup for ordering it should be dict type
-        # Example: ordering_lookups_map={'sign_in_count': 'user_access_tracks__sign_in_count'}
-        # now If we add query params ?sort_by=sign_in_count it looking for user_access_tracks__sign_in_count
-        # For first level of serializer all fields work auto
-        ordering_lookups_map = self.get_ordering_lookups_map(view)
-        lookups.update(ordering_lookups_map)
+        ordering_fields_lookups_map = self.get_ordering_lookups_map(view)
+
+        assert isinstance(
+            ordering_fields_lookups_map, dict
+        ), 'ordering_fields_lookups_map should be dict'
+
+        lookups.update(ordering_fields_lookups_map)
 
         def trans_keys(key: str):
             prefix = '-' if key.startswith('-') else ''
@@ -85,7 +86,17 @@ class OrderingFilter(
         return value
 
     def get_ordering_lookups_map(self, view) -> dict[str, str]:
-        return getattr(view, 'ordering_lookups_map', {})
+        """
+        we can add additional lookup for ordering it should be dict type
+        Example:
+        ```json
+        ordering_fields_lookups_map={'sign_in_count': 'user_access_tracks__sign_in_count'}
+        ```
+        now If we add query params `?sort_by=sign_in_count` 
+        it looking for `user_access_tracks__sign_in_count`
+        For first level of serializer all fields work auto
+        """
+        return getattr(view, 'ordering_fields_lookups_map', {})
 
 
 class SearchFilter(
@@ -98,6 +109,14 @@ class SearchFilter(
         lookups = self.get_default_fields_lookups(
             queryset, view, {'request': request}
         )
+
+        search_fields_lookups_map = self.get_searching_lookups_map(view)
+
+        assert isinstance(
+            search_fields_lookups_map, dict
+        ), 'search_fields_lookups_map should be dict'
+
+        lookups.update(search_fields_lookups_map)
 
         return [
             (lookups[key], value) for key, value in fields.items()
@@ -113,3 +132,16 @@ class SearchFilter(
             return queryset.filter(**dict(query_fields))
 
         return super().filter_queryset(request, queryset, view)
+
+    def get_searching_lookups_map(self, view) -> dict[str, str]:
+        """
+        we can add additional lookup for searching it should be dict type
+        Example:
+        ```json
+        search_fields_lookups_map={'email': 'email__icontains'}
+        ```
+        now If we add query params `?email=admin` 
+        it looking for `email__icontains=admin`
+        For first level of serializer all fields work auto
+        """
+        return getattr(view, 'search_fields_lookups_map', {})
