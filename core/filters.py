@@ -34,7 +34,6 @@ class OrderingFilter(
     DefaultFieldExtractMixin,
     filters.OrderingFilter
 ):
-    ordering_reference_fields = []
     ordering_param = 'sort_by'
     ordering_symbol_param = 'sort_order'
 
