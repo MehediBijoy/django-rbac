@@ -1,6 +1,7 @@
 import requests
 from rest_framework import serializers
 from dataclasses import dataclass, asdict
+from requests.exceptions import RequestException
 
 from config import ENV
 
@@ -43,7 +44,7 @@ class TurnstileCaptchaValidator:
 
         try:
             response = requests.post(self.url, model.dict())
-        except Exception:
+        except RequestException:
             return default_response
         else:
             if response.status_code != 200:
@@ -60,11 +61,11 @@ class TurnstileCaptchaValidator:
 
 
 class CaptchaField(serializers.CharField):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         kwargs.setdefault('write_only', True)
 
         validators: list = kwargs.get('validators', [])
         validators.append(TurnstileCaptchaValidator())
         kwargs['validators'] = validators
 
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)

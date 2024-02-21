@@ -29,7 +29,5 @@ class ResendEmailConfirmation(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
-        user: User = request.user
-        user.resend_email_confirmation()
-
+        request.user.resend_email_confirmation()
         return Response(data='success')

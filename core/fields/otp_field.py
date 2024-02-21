@@ -15,7 +15,7 @@ class OneTimePasswordValidator:
 
 
 class OneTimePasswordField(serializers.CharField):
-    def __init__(self, auto_otp_validate=True, *args, **kwargs):
+    def __init__(self, auto_otp_validate=True, **kwargs):
         kwargs.setdefault('min_length', 6)
         kwargs.setdefault('max_length', 6)
         kwargs.setdefault('write_only', True)
@@ -25,4 +25,4 @@ class OneTimePasswordField(serializers.CharField):
             validators.append(OneTimePasswordValidator())
             kwargs['validators'] = validators
 
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
