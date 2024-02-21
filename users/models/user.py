@@ -99,9 +99,9 @@ class User(
         self.access_tracks.locked_at = None
         self.access_tracks.save()
 
-    def write_log(self, log_type: str, payload, reference: Self = None):
+    def write_log(self, log_type: str, payload=None, reference: Self = None):
         self.user_logs.create(
             type=log_type,
-            payload=json.dumps(payload),
-            reference=reference if reference and reference != self else None
+            payload=json.dumps(payload) if payload else None,
+            reference=reference if reference and reference.id != self.id else None
         )
