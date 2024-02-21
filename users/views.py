@@ -42,4 +42,9 @@ class UserViewSet(
         serializer.is_valid(raise_exception=True)
         user.email_change_request(serializer.validated_data['email'])
 
+        user.write_log(
+            log_type='change_email',
+            reference=request.user
+        )
+
         return Response('success')

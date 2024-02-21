@@ -3,7 +3,7 @@ from rest_framework import filters
 
 class DefaultFieldExtractMixin:
 
-    def get_default_fields_lookups(self, queryset, view, context={}) -> dict[str, str]:
+    def get_default_fields_lookups(self, queryset, view, context) -> dict[str, str]:
         serializer_class = getattr(view, 'serializer_class', None)
         model_class = queryset.model
         model_property_names = [

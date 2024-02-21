@@ -1,5 +1,6 @@
-from .user import User, UserRole, UserStatus, UserType
+from .user_log import UserLog
 from .user_access_track import UserAccessTrack
+from .user import User, UserRole, UserStatus, UserType
 
 __all__ = [
     'User',
@@ -7,4 +8,5 @@ __all__ = [
     'UserStatus',
     'UserType',
     'UserAccessTrack',
+    'UserLog',
 ]

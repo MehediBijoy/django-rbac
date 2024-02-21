@@ -1,3 +1,5 @@
+import json
+from typing import Self
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -75,7 +77,7 @@ class User(
     joined_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'users'
+        db_table = 'user'
         verbose_name = 'user'
         verbose_name_plural = 'users'
         ordering = ('-id',)
@@ -96,3 +98,10 @@ class User(
         self.access_tracks.reset_failed_attempts()
         self.access_tracks.locked_at = None
         self.access_tracks.save()
+
+    def write_log(self, log_type: str, payload=None, reference: Self = None):
+        self.user_logs.create(
+            type=log_type,
+            payload=json.dumps(payload) if payload else None,
+            reference=reference if reference and reference.id != self.id else None
+        )

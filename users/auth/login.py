@@ -11,17 +11,24 @@ class LoginSerializer(TokenObtainPairSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.user: User = None
+        self.user: User | None = None
 
     def validate(self, attrs):
         super().validate(attrs)
 
-        data = UserAuthResponse(self.user).data
+        if bool(
+            self.user.google_mfa_activated and
+            not self.user.verify_otp_token(attrs.get('mfa_code'))
+        ):
+            raise NotAuthenticated('Two factor authentication code invalid')
 
-        if not self.user.google_mfa_activated:
-            return data
-
-        if not self.user.verify_otp_token(attrs.get('mfa_code')):
-            raise NotAuthenticated(code='005', detail='MFA code invalid')
-
-        return data
+        log = self.user.access_tracks
+        self.user.write_log(
+            log_type='login',
+            payload={
+                'sign_in_count': log.sign_in_count,
+                'ip_address': log.ip_address,
+                'user_agent': log.user_agent,
+            }
+        )
+        return UserAuthResponse(self.user).data
