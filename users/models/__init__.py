@@ -1,6 +1,8 @@
 from .user_log import UserLog
 from .user_access_track import UserAccessTrack
 from .user import User, UserRole, UserStatus, UserType
+from .notification import Notification
+from .notification_content import NotificationContent
 
 __all__ = [
     'User',
@@ -9,4 +11,6 @@ __all__ = [
     'UserType',
     'UserAccessTrack',
     'UserLog',
+    'Notification',
+    'NotificationContent',
 ]
