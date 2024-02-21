@@ -26,7 +26,7 @@ class UserAuthModelBackend(ModelBackend):
             return user
 
     def __update_access_tracks(self, request):
-        meta = self.__attempt_meta(request)
+        meta = self.__request_meta(request)
 
         self.access_tracks.reset_failed_attempts()
         self.access_tracks.increase_sign_in_count()
@@ -34,7 +34,7 @@ class UserAuthModelBackend(ModelBackend):
         self.access_tracks.ip_address = meta['ip_address']
         self.access_tracks.save()
 
-    def __attempt_meta(self, request) -> dict[str, str]:
+    def __request_meta(self, request) -> dict[str, str]:
         user_agent = request.META.get('HTTP_USER_AGENT')
         ip_address = request.META.get('REMOTE_ADDR')
         return {'user_agent': user_agent, 'ip_address': ip_address}
@@ -49,7 +49,7 @@ class UserAuthModelBackend(ModelBackend):
             log_type='incorrect_password',
             payload={
                 'failed_attempts': self.access_tracks.failed_attempts,
-                **self.__attempt_meta(request)
+                **self.__request_meta(request)
             }
         )
         self._attempts_left()

@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
 )
 
-from .views import UserViewSet
+from .views.user import UserViewSet
 from .auth.profile import Profile
 from .auth.register import RegisterAPIView
 from .auth.email_confirmation import EmailConfirmationAPIView, ResendEmailConfirmation

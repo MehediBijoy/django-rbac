@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework import mixins, permissions
 from rest_framework.viewsets import GenericViewSet
 
-from .models import User
-from .mixins import ViewsetAccessControlMixin
-from .serializers import UserSerializer, ChangeEmailSerializer
-from .permissions import IsOwnerOrSuperAdmin
+from users.models import User
+from users.mixins import ViewsetAccessControlMixin
+from users.serializers import UserSerializer, ChangeEmailSerializer
+from users.permissions import IsOwnerOrSuperAdmin
 
 
 class UserViewSet(
