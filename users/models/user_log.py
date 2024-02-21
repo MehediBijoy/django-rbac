@@ -5,7 +5,7 @@ class UserLog(models.Model):
     user = models.ForeignKey(
         'User',
         on_delete=models.CASCADE,
-        related_name='user_log',
+        related_name='user_logs',
     )
     type = models.CharField(max_length=255)
     payload = models.JSONField(null=True)
@@ -13,7 +13,7 @@ class UserLog(models.Model):
         'User',
         null=True,
         on_delete=models.SET_NULL,
-        related_name='reference_log'
+        related_name='reference_logs'
     )
 
     class Meta:

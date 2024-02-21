@@ -19,7 +19,7 @@ class EmailConfirmationAPIView(APIView):
         try:
             user = User.objects.get(confirmation_token=token)
             user.confirm()
-        except:
+        except User.DoesNotExist:
             raise ValidationError('Invalid email confirmation token')
 
         return Response(UserAuthResponse(user).data)
