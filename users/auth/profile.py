@@ -3,7 +3,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from users.serializers import UserSerializer
+from users.serializers.users import UserSerializer
 
 
 class Profile(views.APIView):

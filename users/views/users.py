@@ -6,8 +6,8 @@ from rest_framework.viewsets import GenericViewSet
 
 from users.models import User
 from users.mixins import ViewsetAccessControlMixin
-from users.serializers import UserSerializer, ChangeEmailSerializer
 from users.permissions import IsOwnerOrSuperAdmin
+from users.serializers.users import UserSerializer, ChangeEmailSerializer
 
 
 class UserViewSet(

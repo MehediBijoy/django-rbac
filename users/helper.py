@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.tokens import AccessToken
 
-from .serializers import UserSerializer
+from .serializers.users import UserSerializer
 
 
 class UserAuthResponse:
