@@ -3,7 +3,9 @@ from django.db import models
 
 class UserAccessTrack(models.Model):
     user = models.OneToOneField(
-        'User', related_name='user_access_tracks', on_delete=models.CASCADE
+        'User',
+        related_name='user_access_tracks',
+        on_delete=models.CASCADE,
     )
     sign_in_count = models.IntegerField(default=0)
     ip_address = models.GenericIPAddressField(null=True)
