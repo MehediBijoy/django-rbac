@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import update_last_login
 from rest_framework import serializers, exceptions
+from django.contrib.auth.models import update_last_login
 
 from users.helper import UserAuthResponse
 from core.fields import CaptchaField
@@ -8,30 +8,16 @@ from core.fields import OneTimePasswordField
 
 
 class LoginSerializer(serializers.Serializer):
-    default_error_messages = {
-        "no_active_account": "No active account found with the given credentials"
-    }
-
     email = serializers.EmailField()
     password = serializers.CharField()
     mfa_code = OneTimePasswordField(auto_otp_validate=False, required=False)
     captcha = CaptchaField(required=False)
 
     def validate(self, attrs):
-        try:
-            attrs["request"] = self.context["request"]
-        except KeyError:
-            pass
-
+        attrs["request"] = self.context["request"]
         user = authenticate(**attrs)
 
-        if not user.is_active:
-            raise exceptions.AuthenticationFailed(
-                self.error_messages["no_active_account"],
-                "no_active_account",
-            )
-
-        if not self.has_perm(user):
+        if not self.has_perm(user) or not user.is_active:
             raise exceptions.AuthenticationFailed
 
         if bool(

@@ -94,12 +94,12 @@ class User(
     objects = UserManager()
 
     @property
-    def is_admin(self) -> bool:
-        return self.role != UserRole.USER or self.is_staff or self.is_superuser
+    def is_user(self) -> bool:
+        return self.role == UserRole.USER
 
     @property
-    def is_user(self) -> bool:
-        return not self.is_admin
+    def is_admin(self) -> bool:
+        return not self.is_user
 
     @property
     def access_tracks(self) -> UserAccessTrack:
