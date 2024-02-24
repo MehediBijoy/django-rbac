@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from users.serializers.users import UserSerializer
 
 
-class Profile(views.APIView):
+class ProfileAPIView(views.APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
