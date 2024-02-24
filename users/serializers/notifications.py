@@ -11,7 +11,10 @@ class NotificationContentSerializer(serializers.ModelSerializer):
 
 class NotificationSerializer(serializers.ModelSerializer):
     notification_content = NotificationContentSerializer(read_only=True)
-    notification_content_id = serializers.PrimaryKeyRelatedField(queryset=NotificationContent.objects.all())
+    notification_content_id = serializers.PrimaryKeyRelatedField(
+        queryset=NotificationContent.objects.all(),
+        write_only=True
+    )
 
     class Meta:
         model = Notification
