@@ -12,13 +12,13 @@ class NotificationService:
             defaults={'title': 'Default Title'}
         )
 
-        return cls().create_notification(
+        return cls().create_manual_notification(
             user=user,
             content_id=content.id,
             payload=payload
         )
 
-    def create_notification(self, user, content_id, payload):
+    def create_manual_notification(self, user, content_id, payload):
         return Notification.objects.create(
             user=user,
             payload=json.dumps(payload, cls=DjangoJSONEncoder),
