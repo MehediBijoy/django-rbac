@@ -94,6 +94,10 @@ class User(
     objects = UserManager()
 
     @property
+    def is_admin(self) -> bool:
+        return self.role != UserRole.USER or self.is_staff or self.is_superuser
+
+    @property
     def access_tracks(self) -> UserAccessTrack:
         try:
             return self.user_access_tracks
