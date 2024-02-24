@@ -1,7 +1,6 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
 from rest_framework import serializers, exceptions
-from rest_framework_simplejwt.settings import api_settings
 
 from users.helper import UserAuthResponse
 from core.fields import CaptchaField
@@ -26,20 +25,23 @@ class LoginSerializer(serializers.Serializer):
 
         user = authenticate(**attrs)
 
-        if not api_settings.USER_AUTHENTICATION_RULE(user):
+        if not user.is_active:
             raise exceptions.AuthenticationFailed(
                 self.error_messages["no_active_account"],
                 "no_active_account",
             )
 
+        if not self.has_perm(user):
+            raise exceptions.AuthenticationFailed
+
         if bool(
-            user.google_mfa_activated and
-            not user.verify_otp_token(attrs.get('mfa_code'))
+                user.google_mfa_activated and
+                not user.verify_otp_token(attrs.get('mfa_code'))
         ):
             raise exceptions.AuthenticationFailed('Two factor authentication code invalid')
 
-        if api_settings.UPDATE_LAST_LOGIN:
-            update_last_login(None, user)
+        # update user last login field
+        update_last_login(None, user)
 
         log = user.access_tracks
         user.write_log(
@@ -52,3 +54,11 @@ class LoginSerializer(serializers.Serializer):
         )
 
         return UserAuthResponse(user).data
+
+    def has_perm(self, user):
+        return user.is_user
+
+
+class AdminLoginSerializer(LoginSerializer):
+    def has_perm(self, user):
+        return user.is_admin

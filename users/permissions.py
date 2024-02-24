@@ -16,6 +16,19 @@ class IsSafeAdmin(permissions.BasePermission):
         )
 
 
+IsSafeOrSuperAdmin = IsSuperAdmin | IsSafeAdmin
+
+
+class IsAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_admin
+
+
+class IsUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_user
+
+
 class IsOwnerOrSuperAdmin(IsSafeAdmin):
     def has_permission(self, request, view):
         if request.user.role == UserRole.ADMIN:

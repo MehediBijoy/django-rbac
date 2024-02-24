@@ -1,6 +1,6 @@
 from django.utils import timezone
+from rest_framework import exceptions
 from django.contrib.auth.backends import ModelBackend
-from rest_framework.exceptions import NotAuthenticated
 
 from users.models import User, UserStatus
 
@@ -17,6 +17,7 @@ class UserAuthModelBackend(ModelBackend):
             self.access_tracks = user.access_tracks
         except User.DoesNotExist:
             User().set_password(password)
+            raise exceptions.AuthenticationFailed
         else:
             self._check_restriction(user)
             if not user.check_password(password):
@@ -62,13 +63,13 @@ class UserAuthModelBackend(ModelBackend):
             left_attempts if left_attempts > 1 else 'last'
         )
 
-        raise NotAuthenticated(
+        raise exceptions.AuthenticationFailed(
             f'Wrong password, {message}'
         )
 
     def _check_locked(self):
         if self.access_tracks.locked_at:
-            raise NotAuthenticated(
+            raise exceptions.PermissionDenied(
                 f'Too many attempts taken, account locked at {self.access_tracks.locked_at}'
             )
 
@@ -76,4 +77,4 @@ class UserAuthModelBackend(ModelBackend):
         self._check_locked()
 
         if user.status == UserStatus.BLOCKED:
-            raise NotAuthenticated('account is blocked')
+            raise exceptions.PermissionDenied('account is blocked')

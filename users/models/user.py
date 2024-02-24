@@ -98,6 +98,10 @@ class User(
         return self.role != UserRole.USER or self.is_staff or self.is_superuser
 
     @property
+    def is_user(self) -> bool:
+        return not self.is_admin
+
+    @property
     def access_tracks(self) -> UserAccessTrack:
         try:
             return self.user_access_tracks
