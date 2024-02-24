@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from users.models import User
 from users.helper import UserAuthResponse
+from users.services import NotificationService
 
 
 class EmailConfirmationAPIView(APIView):
@@ -21,6 +22,12 @@ class EmailConfirmationAPIView(APIView):
             user.confirm()
         except User.DoesNotExist:
             raise ValidationError('Invalid email confirmation token')
+
+        NotificationService.notify(
+            user=user,
+            triggered_by='email_confirmation',
+            payload={'email': user.email, 'confirmed_at': user.confirmed_at}
+        )
 
         return Response(UserAuthResponse(user).data)
 

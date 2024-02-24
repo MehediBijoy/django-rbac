@@ -1,5 +1,6 @@
 from rest_framework_simplejwt.tokens import AccessToken
 
+from users.models import UserRole
 from .serializers.users import UserSerializer
 
 
@@ -20,4 +21,7 @@ class UserAuthResponse:
 
     @classmethod
     def get_token(cls, user):
-        return cls.token_class.for_user(user)
+        token = cls.token_class.for_user(user)
+        token['role'] = UserRole.get_role(user.role)
+
+        return token

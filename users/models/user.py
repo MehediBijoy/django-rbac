@@ -24,6 +24,12 @@ class UserRole(models.IntegerChoices):
     ADMIN = 1, 'admin'
     SUPER_ADMIN = 2, 'super_admin'
 
+    @classmethod
+    def get_role(cls, value):
+        for choice in cls.choices:
+            if choice[0] == value:
+                return choice[1]
+
 
 class UserType(models.IntegerChoices):
     REGULAR = 0, 'regular'
