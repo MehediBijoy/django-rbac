@@ -1,0 +1,4 @@
+[project]
+name = 'django-rbac'
+version = '2024.1.0'
+requires-python = '3.12'
