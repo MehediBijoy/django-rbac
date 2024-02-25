@@ -132,7 +132,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "users.User"
 
 AUTHENTICATION_BACKENDS = [
-    'users.auth.backends.UserAuthModelBackend',
+    'users.auth.ModelBackend',
 ]
 
 # rest framework settings
@@ -141,7 +141,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'users.auth.JWTAuthentication',
     ],
     'EXCEPTION_HANDLER': 'core.exception.exception_handler',
     'DEFAULT_PAGINATION_CLASS': 'core.pagination.PageLimitPagination',

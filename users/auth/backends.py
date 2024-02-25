@@ -1,13 +1,30 @@
 from django.utils import timezone
 from rest_framework import exceptions
-from django.contrib.auth.backends import ModelBackend
+from django.contrib.auth import backends
+from rest_framework_simplejwt import authentication, exceptions
+from rest_framework_simplejwt.tokens import Token, AccessToken
 
-from users.models import User, UserStatus
+from users.models import User, UserStatus, JwtBlackList
+
 
 MAX_ATTEMPTS = 5
 
 
-class UserAuthModelBackend(ModelBackend):
+class JWTAuthentication(authentication.JWTAuthentication):
+    def get_validated_token(self, raw_token: bytes) -> Token:
+        try:
+            token = AccessToken(raw_token)  # type: ignore
+        except exceptions.TokenError:
+            raise exceptions.InvalidToken
+
+        # check token has already in black listed
+        if JwtBlackList.check_revoked(token):
+            raise exceptions.InvalidToken
+
+        return token
+
+
+class ModelBackend(backends.ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None:
             username = kwargs.get(User.USERNAME_FIELD)
