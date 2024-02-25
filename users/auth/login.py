@@ -1,29 +1,36 @@
-from rest_framework.exceptions import NotAuthenticated
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
+from rest_framework import serializers, exceptions
+from django.contrib.auth.models import update_last_login
 
-from users.models import User
 from users.helper import UserAuthResponse
+from core.fields import CaptchaField
 from core.fields import OneTimePasswordField
 
 
-class LoginSerializer(TokenObtainPairSerializer):
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
     mfa_code = OneTimePasswordField(auto_otp_validate=False, required=False)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user: User | None = None
+    captcha = CaptchaField(required=False)
 
     def validate(self, attrs):
-        super().validate(attrs)
+        attrs["request"] = self.context["request"]
+        user = authenticate(**attrs)
+
+        if not self.has_perm(user) or not user.is_active:
+            raise exceptions.AuthenticationFailed
 
         if bool(
-            self.user.google_mfa_activated and
-            not self.user.verify_otp_token(attrs.get('mfa_code'))
+                user.google_mfa_activated and
+                not user.verify_otp_token(attrs.get('mfa_code'))
         ):
-            raise NotAuthenticated('Two factor authentication code invalid')
+            raise exceptions.AuthenticationFailed('Two factor authentication code invalid')
 
-        log = self.user.access_tracks
-        self.user.write_log(
+        # update user last login field
+        update_last_login(None, user)
+
+        log = user.access_tracks
+        user.write_log(
             log_type='login',
             payload={
                 'sign_in_count': log.sign_in_count,
@@ -31,4 +38,13 @@ class LoginSerializer(TokenObtainPairSerializer):
                 'user_agent': log.user_agent,
             }
         )
-        return UserAuthResponse(self.user).data
+
+        return UserAuthResponse(user).data
+
+    def has_perm(self, user):
+        return user.is_user
+
+
+class AdminLoginSerializer(LoginSerializer):
+    def has_perm(self, user):
+        return user.is_admin

@@ -1,6 +1,6 @@
 from django.utils import timezone
+from rest_framework import exceptions
 from django.contrib.auth.backends import ModelBackend
-from rest_framework.exceptions import NotAuthenticated
 
 from users.models import User, UserStatus
 
@@ -17,6 +17,7 @@ class UserAuthModelBackend(ModelBackend):
             self.access_tracks = user.access_tracks
         except User.DoesNotExist:
             User().set_password(password)
+            raise exceptions.AuthenticationFailed
         else:
             self._check_restriction(user)
             if not user.check_password(password):
@@ -26,7 +27,7 @@ class UserAuthModelBackend(ModelBackend):
             return user
 
     def __update_access_tracks(self, request):
-        meta = self.__attempt_meta(request)
+        meta = self.__request_meta(request)
 
         self.access_tracks.reset_failed_attempts()
         self.access_tracks.increase_sign_in_count()
@@ -34,7 +35,7 @@ class UserAuthModelBackend(ModelBackend):
         self.access_tracks.ip_address = meta['ip_address']
         self.access_tracks.save()
 
-    def __attempt_meta(self, request) -> dict[str, str]:
+    def __request_meta(self, request) -> dict[str, str]:
         user_agent = request.META.get('HTTP_USER_AGENT')
         ip_address = request.META.get('REMOTE_ADDR')
         return {'user_agent': user_agent, 'ip_address': ip_address}
@@ -49,7 +50,7 @@ class UserAuthModelBackend(ModelBackend):
             log_type='incorrect_password',
             payload={
                 'failed_attempts': self.access_tracks.failed_attempts,
-                **self.__attempt_meta(request)
+                **self.__request_meta(request)
             }
         )
         self._attempts_left()
@@ -62,13 +63,13 @@ class UserAuthModelBackend(ModelBackend):
             left_attempts if left_attempts > 1 else 'last'
         )
 
-        raise NotAuthenticated(
+        raise exceptions.AuthenticationFailed(
             f'Wrong password, {message}'
         )
 
     def _check_locked(self):
         if self.access_tracks.locked_at:
-            raise NotAuthenticated(
+            raise exceptions.PermissionDenied(
                 f'Too many attempts taken, account locked at {self.access_tracks.locked_at}'
             )
 
@@ -76,4 +77,4 @@ class UserAuthModelBackend(ModelBackend):
         self._check_locked()
 
         if user.status == UserStatus.BLOCKED:
-            raise NotAuthenticated('account is blocked')
+            raise exceptions.PermissionDenied('account is blocked')

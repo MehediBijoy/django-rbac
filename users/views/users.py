@@ -4,17 +4,17 @@ from rest_framework.response import Response
 from rest_framework import mixins, permissions
 from rest_framework.viewsets import GenericViewSet
 
-from .models import User
-from .mixins import ViewsetAccessControlMixin
-from .serializers import UserSerializer, ChangeEmailSerializer
-from .permissions import IsOwnerOrSuperAdmin
+from users.models import User
+from users.mixins import ViewSetAccessControlMixin
+from users.permissions import IsOwnerOrSuperAdmin
+from users.serializers.users import UserSerializer, ChangeEmailSerializer
 
 
 class UserViewSet(
     mixins.ListModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
-    ViewsetAccessControlMixin,
+    ViewSetAccessControlMixin,
     GenericViewSet,
 ):
     queryset = User.objects.all()

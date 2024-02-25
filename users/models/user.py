@@ -24,6 +24,12 @@ class UserRole(models.IntegerChoices):
     ADMIN = 1, 'admin'
     SUPER_ADMIN = 2, 'super_admin'
 
+    @classmethod
+    def get_role(cls, value):
+        for choice in cls.choices:
+            if choice[0] == value:
+                return choice[1]
+
 
 class UserType(models.IntegerChoices):
     REGULAR = 0, 'regular'
@@ -86,6 +92,14 @@ class User(
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+
+    @property
+    def is_user(self) -> bool:
+        return self.role == UserRole.USER
+
+    @property
+    def is_admin(self) -> bool:
+        return not self.is_user
 
     @property
     def access_tracks(self) -> UserAccessTrack:
