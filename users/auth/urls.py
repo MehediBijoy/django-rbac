@@ -5,6 +5,7 @@ from .profile import ProfileAPIView
 from .register import RegisterAPIView
 from .login import LoginSerializer, AdminLoginSerializer
 from .email_confirmation import EmailConfirmationAPIView, AdminEmailConfirmationAPIView
+from .logout import LogoutView
 
 admin_urlpatterns = [
     path('login', TokenObtainPairView.as_view(serializer_class=AdminLoginSerializer)),
@@ -17,4 +18,5 @@ urlpatterns = [
     path('profile', ProfileAPIView.as_view()),
     path('email_confirmation', EmailConfirmationAPIView.as_view()),
     path('admin/', include(admin_urlpatterns)),
+    path('logout', LogoutView.as_view())
 ]
