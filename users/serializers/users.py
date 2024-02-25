@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'email', 'user_type', 'state',
             'status_reason', 'is_active', 'role',
-            'google_mfa_activated', 'sign_in_count'
+            'google_mfa_activated', 'sign_in_count', 'last_login',
         )
 
 
