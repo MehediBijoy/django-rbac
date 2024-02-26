@@ -2,16 +2,17 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers, exceptions
 from django.contrib.auth.models import update_last_login
 
-from users.helper import UserAuthResponse
 from core.fields import CaptchaField
+from users.helper import UserAuthResponse
 from core.fields import OneTimePasswordField
 
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
-    mfa_code = OneTimePasswordField(auto_otp_validate=False, required=False)
     captcha = CaptchaField(required=False)
+    remember_me = serializers.BooleanField(default=False)
+    mfa_code = OneTimePasswordField(auto_otp_validate=False, required=False)
 
     def validate(self, attrs):
         attrs["request"] = self.context["request"]
@@ -21,8 +22,8 @@ class LoginSerializer(serializers.Serializer):
             raise exceptions.AuthenticationFailed
 
         if bool(
-                user.google_mfa_activated and
-                not user.verify_otp_token(attrs.get('mfa_code'))
+            user.google_mfa_activated and
+            not user.verify_otp_token(attrs.get('mfa_code'))
         ):
             raise exceptions.AuthenticationFailed('Two factor authentication code invalid')
 
@@ -39,7 +40,10 @@ class LoginSerializer(serializers.Serializer):
             }
         )
 
-        return UserAuthResponse(user).data
+        return UserAuthResponse(
+            user=user,
+            remember_me=attrs.get('remember_me')
+        ).data
 
     def has_perm(self, user):
         return user.is_user

@@ -7,8 +7,9 @@ from .serializers.users import UserSerializer
 class UserAuthResponse:
     token_class = AccessToken
 
-    def __init__(self, user) -> None:
+    def __init__(self, user, remember_me=False) -> None:
         self.user = user
+        self.remember = remember_me
 
     @property
     def data(self):
@@ -19,9 +20,11 @@ class UserAuthResponse:
 
         return data
 
-    @classmethod
-    def get_token(cls, user):
-        token = cls.token_class.for_user(user)
+    def get_token(self, user):
+        token = self.token_class.for_user(user)
         token['role'] = UserRole.get_role(user.role)
+
+        if self.remember:
+            token.set_exp(lifetime=token.lifetime * 2)
 
         return token
