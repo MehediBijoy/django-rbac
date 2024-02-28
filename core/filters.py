@@ -107,6 +107,10 @@ class SearchFilter(
     search_param = 'search'
 
     def query_params_build(self, lookups: LookupType, fields):
+        """
+        convert `query_params` to model field data type,
+        if data type is not convertable then just ignore it
+        """
         query_params = dict()
 
         for key, value in fields.items():
