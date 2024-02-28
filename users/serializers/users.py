@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
     user_type = serializers.CharField(source='get_user_type_display')
     role = serializers.CharField(source='get_role_display')
     state = serializers.CharField(source='get_status_display')
-    sign_in_count = serializers.CharField(
+    sign_in_count = serializers.IntegerField(
         source='user_access_tracks.sign_in_count'
     )
 
