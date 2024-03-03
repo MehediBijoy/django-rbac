@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'drf_spectacular',
+    'drf_yasg',
     'rest_framework_simplejwt',
     'corsheaders',
     'users'
@@ -171,9 +171,14 @@ CORS_ALLOW_HEADERS = (
     "x-requested-with",
 )
 
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'Django RBAC',
-    'DESCRIPTION': 'This project developed for role based django access control implementation',
-    'VERSION': '0.1.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+SWAGGER_SETTINGS = {
+    'PERSIST_AUTH': True,
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
 }
