@@ -149,7 +149,6 @@ REST_FRAMEWORK = {
         'core.filters.OrderingFilter',
         'core.filters.SearchFilter',
     ],
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
