@@ -6,7 +6,8 @@ bcrypt==4.1.2
 pyotp==2.9.0
 requests==2.31.0
 django-cors-headers==4.3.1
-python-dotenv==1.0.1
 Faker==23.2.1
 drf-yasg==1.21.7
-setuptools
+setuptools==73.0.1
+django-anymail[amazon-ses]==11.1
+python-decouple==3.8

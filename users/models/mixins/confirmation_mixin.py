@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import timedelta
 from django.utils import timezone
+from django.core.mail import EmailMessage
 from django.utils.crypto import get_random_string
 from rest_framework.exceptions import ValidationError
 
@@ -64,10 +65,13 @@ class ConfirmationMixin(models.Model):
         self.save(update_fields=update_fields)
 
     def __send_mail(self):
-        """
-        If we have unconfirmed email Then email send to unconfirmed email
-        otherwise send to regular email
-        """
+        message = EmailMessage(
+            subject='Confirm your email',
+            body=f'your confirmation token is {self.confirmation_token}',
+            to=[self.email]
+        )
+        res = message.send(fail_silently=False)
+        print(res)
 
     def __check_prepend_generation(self):
         if self.__is_token_valid:

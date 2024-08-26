@@ -1,9 +1,14 @@
-from os import getenv
+from decouple import config
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass(slots=True)
 class ENV:
     title = 'Bretton Woods Gold'
+    SECRET_KEY = config('SECRET_KEY')
 
-    TURNSTILE_SECRET = getenv('TURNSTILE_SECRET')
+    TURNSTILE_SECRET = config('TURNSTILE_SECRET')
+    SES_ACCESS_KEY = config('SES_ACCESS_KEY')
+    SES_SECRET_KEY = config('SES_SECRET_KEY')
+    SES_REGION_NAME = config('SES_REGION_NAME')
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')

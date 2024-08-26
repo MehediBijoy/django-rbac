@@ -1,24 +1,20 @@
 from pathlib import Path
-from dotenv import load_dotenv
 from datetime import timedelta
+from .env import ENV
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# load env
-load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=hxe$ky^qdu0q=rxgduknr$hd=z%oxdsoj1f#(ntu8t+3fm7d5'
+SECRET_KEY = ENV.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -33,7 +29,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework_simplejwt',
     'corsheaders',
-    'users'
+    'anymail',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -157,6 +154,20 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
     "TOKEN_OBTAIN_SERIALIZER": "users.auth.login.LoginSerializer",
+}
+
+EMAIL_BACKEND = "anymail.backends.amazon_ses.EmailBackend"
+DEFAULT_FROM_EMAIL = ENV.DEFAULT_FROM_EMAIL
+ANYMAIL = {
+    "AMAZON_SES_CLIENT_PARAMS": {
+        "aws_access_key_id": ENV.SES_ACCESS_KEY,
+        "aws_secret_access_key": ENV.SES_SECRET_KEY,
+        "region_name": ENV.SES_REGION_NAME,
+        "config": {
+            "connect_timeout": 30,
+            "read_timeout": 30,
+        }
+    },
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
