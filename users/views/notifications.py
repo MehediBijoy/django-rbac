@@ -31,7 +31,7 @@ class NotificationContentViewSet(viewsets.ModelViewSet):
     queryset = NotificationContent.objects.all()
 
 
-router = DefaultRouter(trailing_slash=False)
+router = DefaultRouter()
 router.register(r'', NotificationViewSet)
 router.register(r'contents', NotificationContentViewSet)
 
