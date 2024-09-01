@@ -12,9 +12,9 @@ class EmailConfirmationMixin(models.Model):
     email: str
     email_confirmed = models.BooleanField(default=False)
     email_confirmed_at = models.DateTimeField(null=True)
-    email_confirmation_token = models.CharField(max_length=255, null=True)
+    email_confirmation_token = models.CharField(max_length=255, null=True, unique=True)
     email_confirmation_sent_at = models.DateTimeField(null=True)
-    email_candidate = models.EmailField(null=True)
+    email_candidate = models.EmailField(null=True, unique=True)
 
     class Meta:
         abstract = True

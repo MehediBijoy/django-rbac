@@ -6,7 +6,7 @@ from config import ENV
 
 class OneTimePasswordMixin(models.Model):
     email: str
-    otp_secret = models.CharField(max_length=255, null=True)
+    otp_secret = models.CharField(max_length=255, null=True, unique=True)
     is_otp_active = models.BooleanField(default=False)
 
     def get_otp_uri(self) -> str:

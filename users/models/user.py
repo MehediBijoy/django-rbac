@@ -81,8 +81,9 @@ class User(
         verbose_name_plural = 'users'
         ordering = ('-id',)
 
-    EMAIL_FIELD = "email"
+    EMAIL_FIELD = 'email'
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'phone_number']
 
     objects = UserManager()
 
