@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass(slots=True, frozen=True)
 class ENV:
-    TITLE = 'Bretton Woods Gold'
+    TITLE = 'Django RBAC'
     SECRET_KEY = config('SECRET_KEY')
 
     TURNSTILE_SECRET = config('TURNSTILE_SECRET')

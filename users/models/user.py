@@ -10,7 +10,6 @@ from django.contrib.auth.models import (
 from .mixins.otp_mixin import OneTimePasswordMixin
 from .mixins.email_confirmation_mixin import EmailConfirmationMixin
 from .mixins.forgot_password_mixin import ForgotPasswordMixin
-from .user_access_track import UserAccessTrack
 
 
 class UserStatus(models.TextChoices):
@@ -94,19 +93,6 @@ class User(
     @property
     def is_admin(self) -> bool:
         return not self.is_user
-
-    @property
-    def access_tracks(self) -> UserAccessTrack:
-        try:
-            return self.user_access_tracks
-        except UserAccessTrack.DoesNotExist:
-            return UserAccessTrack.objects.create(user=self)
-
-    def unlock(self):
-        """user unlocked if attempts too many wrong password"""
-        self.access_tracks.reset_failed_attempts()
-        self.access_tracks.locked_at = None
-        self.access_tracks.save()
 
     def write_log(self, log_type: str, payload=None, reference: Self = None):
         self.user_logs.create(

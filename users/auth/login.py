@@ -30,16 +30,6 @@ class LoginSerializer(serializers.Serializer):
         # update user last login field
         update_last_login(None, user)
 
-        log = user.access_tracks
-        user.write_log(
-            log_type='login',
-            payload={
-                'sign_in_count': log.sign_in_count,
-                'ip_address': log.ip_address,
-                'user_agent': log.user_agent,
-            }
-        )
-
         return UserAuthResponse(
             user=user,
             remember_me=attrs.get('remember_me')

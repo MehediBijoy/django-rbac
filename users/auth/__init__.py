@@ -1,6 +1,5 @@
-from .backends import JWTAuthentication, ModelBackend
+from .backends import JWTAuthentication
 
 __all__ = [
     'JWTAuthentication',
-    'ModelBackend',
 ]

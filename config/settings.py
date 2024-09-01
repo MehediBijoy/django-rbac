@@ -128,10 +128,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "users.User"
 
-AUTHENTICATION_BACKENDS = [
-    'users.auth.ModelBackend',
-]
-
 # rest framework settings
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -153,7 +149,6 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
-    "TOKEN_OBTAIN_SERIALIZER": "users.auth.login.LoginSerializer",
 }
 
 DEFAULT_FROM_EMAIL = ENV.DEFAULT_FROM_EMAIL
