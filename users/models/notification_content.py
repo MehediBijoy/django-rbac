@@ -13,6 +13,5 @@ class NotificationContent(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'notification_content'
         verbose_name = 'notification content'
         verbose_name_plural = 'notification contents'

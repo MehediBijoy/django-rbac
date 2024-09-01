@@ -22,7 +22,7 @@ class LoginSerializer(serializers.Serializer):
             raise exceptions.AuthenticationFailed
 
         if bool(
-            user.google_mfa_activated and
+            user.is_otp_active and
             not user.verify_otp_token(attrs.get('mfa_code'))
         ):
             raise exceptions.AuthenticationFailed('Two factor authentication code invalid')

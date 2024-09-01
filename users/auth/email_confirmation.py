@@ -21,7 +21,7 @@ class EmailConfirmationAPIView(views.APIView):
             raise exceptions.ValidationError('Token is not present')
 
         try:
-            user = User.objects.get(confirmation_token=token)
+            user = User.objects.get(email_confirmation_token=token)
             user.confirm()
         except User.DoesNotExist:
             raise exceptions.ValidationError('Invalid email confirmation token')
@@ -29,7 +29,7 @@ class EmailConfirmationAPIView(views.APIView):
         NotificationService.notify(
             user=user,
             triggered_by='email_confirmation',
-            payload={'email': user.email, 'confirmed_at': user.confirmed_at}
+            payload={'email': user.email, 'email_confirmed_at': user.email_confirmed_at}
         )
 
         return Response(UserAuthResponse(user).data)

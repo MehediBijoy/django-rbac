@@ -8,32 +8,29 @@ from django.contrib.auth.models import (
 )
 
 from .mixins.otp_mixin import OneTimePasswordMixin
-from .mixins.confirmation_mixin import ConfirmationMixin
+from .mixins.email_confirmation_mixin import EmailConfirmationMixin
+from .mixins.forgot_password_mixin import ForgotPasswordMixin
 from .user_access_track import UserAccessTrack
 
 
-class UserStatus(models.IntegerChoices):
-    ACTIVE = 0, 'active'
-    INACTIVE = 1, 'inactive'
-    INVESTIGATE = 2, 'investigate'
-    BLOCKED = 3, 'blocked'
+class UserStatus(models.TextChoices):
+    ACTIVE = 'active', 'active'
+    INACTIVE = 'inactive', 'inactive'
+    INVESTIGATE = 'investigate', 'investigate'
+    BLOCKED = 'blocked', 'blocked'
 
 
-class UserRole(models.IntegerChoices):
-    USER = 0, 'user'
-    ADMIN = 1, 'admin'
-    SUPER_ADMIN = 2, 'super_admin'
+class UserRole(models.TextChoices):
+    USER = 'user', 'user'
+    ADMIN = 'admin', 'admin'
+    EDITOR_ADMIN = 'editor_admin', 'editor_admin'
+    SUPER_ADMIN = 'super_admin', 'super_admin'
 
     @classmethod
     def get_role(cls, value):
         for choice in cls.choices:
             if choice[0] == value:
                 return choice[1]
-
-
-class UserType(models.IntegerChoices):
-    REGULAR = 0, 'regular'
-    AFFILIATE = 1, 'affiliate'
 
 
 class UserManager(BaseUserManager):
@@ -55,7 +52,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password, **kwargs):
-        kwargs.setdefault('role', UserRole.SUPER_ADMIN)
+        kwargs.setdefault('role', UserRole.ADMIN)
         return self.create_user(email, password, **kwargs)
 
 
@@ -63,33 +60,29 @@ class User(
     AbstractBaseUser,
     PermissionsMixin,
     OneTimePasswordMixin,
-    ConfirmationMixin,
+    EmailConfirmationMixin,
+    ForgotPasswordMixin,
 ):
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255, null=True)
     email = models.EmailField(max_length=255, unique=True)
-    confirmed_at = models.DateTimeField(null=True)
-    user_type = models.PositiveSmallIntegerField(
-        choices=UserType.choices, default=UserType.REGULAR
-    )
-    status = models.PositiveSmallIntegerField(
-        choices=UserStatus.choices, default=UserStatus.ACTIVE
-    )
+    phone_number = models.CharField(max_length=15, unique=True)
+    status = models.CharField(max_length=25, choices=UserStatus.choices, default=UserStatus.ACTIVE)
     status_reason = models.TextField(null=True)
-    role = models.PositiveSmallIntegerField(
-        choices=UserRole.choices, default=UserRole.USER
-    )
+    role = models.CharField(max_length=25, choices=UserRole.choices, default=UserRole.USER)
+    # django default fields for django admin
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     joined_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'user'
         verbose_name = 'user'
         verbose_name_plural = 'users'
         ordering = ('-id',)
 
+    EMAIL_FIELD = "email"
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
 
     objects = UserManager()
 
@@ -109,6 +102,7 @@ class User(
             return UserAccessTrack.objects.create(user=self)
 
     def unlock(self):
+        """user unlocked if attempts too many wrong password"""
         self.access_tracks.reset_failed_attempts()
         self.access_tracks.locked_at = None
         self.access_tracks.save()

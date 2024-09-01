@@ -14,7 +14,6 @@ class UserAccessTrack(models.Model):
     user_agent = models.CharField(max_length=255, null=True)
 
     class Meta:
-        db_table = 'user_access_tracks'
         verbose_name = 'user_access_track'
         verbose_name_plural = 'user_access_tracks'
 

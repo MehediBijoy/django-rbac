@@ -10,7 +10,6 @@ class JwtBlackList(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'jwt_black_list'
         verbose_name = 'jwt black list'
         verbose_name_plural = 'jwt black lists'
 

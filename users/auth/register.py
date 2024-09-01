@@ -33,7 +33,7 @@ class RegisterSerializer(serializers.Serializer):
 
         if attrs.get('password') != password_confirmation:
             raise serializers.ValidationError(
-                {"password_confirmation": "confirmed password did't matched"}
+                {"password_confirmation": "confirmed password didn't matched"}
             )
 
         return super().validate(attrs)

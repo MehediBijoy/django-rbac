@@ -3,7 +3,7 @@
 import random
 from faker import Faker
 from django.core.management.base import BaseCommand
-from users.models import User, UserRole, UserType, UserStatus
+from users.models import User, UserRole, UserStatus
 
 fake = Faker()
 
@@ -17,7 +17,6 @@ class Command(BaseCommand):
         for _ in range(num_users):
             email = fake.email()
             password = fake.password()  # You might want to generate secure passwords
-            user_type = random.choice([UserType.REGULAR, UserType.AFFILIATE])
             status = random.choice(
                 [UserStatus.ACTIVE, UserStatus.INACTIVE, UserStatus.INVESTIGATE, UserStatus.BLOCKED])
             status_reason = fake.sentence()
@@ -31,7 +30,6 @@ class Command(BaseCommand):
             user = User.objects.create_user(
                 email=email,
                 password=password,
-                user_type=user_type,
                 status=status,
                 status_reason=status_reason,
                 role=role,
@@ -42,4 +40,4 @@ class Command(BaseCommand):
 
             # You can add more fields as needed
 
-            self.stdout.write(self.style.SUCCESS(f'User created: {email}'))
+            self.stdout.write(self.style.SUCCESS(f'User created: {user.email}'))

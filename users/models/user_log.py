@@ -17,6 +17,5 @@ class UserLog(models.Model):
     )
 
     class Meta:
-        db_table = 'user_log'
         verbose_name = 'User log'
         verbose_name_plural = 'User logs'

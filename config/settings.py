@@ -156,7 +156,6 @@ SIMPLE_JWT = {
     "TOKEN_OBTAIN_SERIALIZER": "users.auth.login.LoginSerializer",
 }
 
-EMAIL_BACKEND = "anymail.backends.amazon_ses.EmailBackend"
 DEFAULT_FROM_EMAIL = ENV.DEFAULT_FROM_EMAIL
 ANYMAIL = {
     "AMAZON_SES_CLIENT_PARAMS": {

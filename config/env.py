@@ -2,9 +2,9 @@ from decouple import config
 from dataclasses import dataclass
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class ENV:
-    title = 'Bretton Woods Gold'
+    TITLE = 'Bretton Woods Gold'
     SECRET_KEY = config('SECRET_KEY')
 
     TURNSTILE_SECRET = config('TURNSTILE_SECRET')

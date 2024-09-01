@@ -14,6 +14,5 @@ class Notification(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'notification'
         verbose_name = 'Notification'
         verbose_name_plural = 'Notifications'

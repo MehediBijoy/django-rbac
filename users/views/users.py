@@ -22,7 +22,7 @@ class UserViewSet(
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrSuperAdmin]
 
     # search_fields work for only ?search=example@email.com params
-    search_fields = ['email']
+    search_fields = ['first_name', 'last_name', 'email']
 
     # searching_lookups_map work for field wise search
     # example ?email=example@email.com

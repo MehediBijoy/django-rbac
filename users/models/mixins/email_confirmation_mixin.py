@@ -5,23 +5,24 @@ from django.core.mail import EmailMessage
 from django.utils.crypto import get_random_string
 from rest_framework.exceptions import ValidationError
 
-TOKEN_VALID_DURATION = 15
+TOKEN_VALID_DURATION = 5
 
 
-class ConfirmationMixin(models.Model):
+class EmailConfirmationMixin(models.Model):
+    email: str
     email_confirmed = models.BooleanField(default=False)
-    confirmed_at = models.DateTimeField(null=True)
-    confirmation_token = models.CharField(max_length=255, null=True)
-    confirmation_sent_at = models.DateTimeField(null=True)
-    unconfirmed_email = models.EmailField(null=True)
+    email_confirmed_at = models.DateTimeField(null=True)
+    email_confirmation_token = models.CharField(max_length=255, null=True)
+    email_confirmation_sent_at = models.DateTimeField(null=True)
+    email_candidate = models.EmailField(null=True)
 
     class Meta:
         abstract = True
 
     def send_email_confirmation(self):
-        self.confirmation_sent_at = timezone.now()
-        self.confirmation_token = get_random_string(25)
-        self.save(update_fields=['confirmation_sent_at', 'confirmation_token'])
+        self.email_confirmation_sent_at = timezone.now()
+        self.email_confirmation_token = get_random_string(25)
+        self.save(update_fields=['email_confirmation_sent_at', 'email_confirmation_token'])
 
         self.__send_mail()
 
@@ -34,8 +35,8 @@ class ConfirmationMixin(models.Model):
             raise ValidationError('Please confirm your primary email first')
 
         self.__check_prepend_generation()
-        self.unconfirmed_email = email
-        self.save(update_fields=['unconfirmed_email'])
+        self.email_candidate = email
+        self.save(update_fields=['email_candidate'])
 
         self.send_email_confirmation()
 
@@ -44,22 +45,22 @@ class ConfirmationMixin(models.Model):
             raise ValidationError('confirmation token is expired')
 
         update_fields = []
-        if bool(self.unconfirmed_email):
-            self.email = self.unconfirmed_email
-            self.unconfirmed_email = None
+        if bool(self.email_candidate):
+            self.email = self.email_candidate
+            self.email_candidate = None
 
-            update_fields.extend(['email', 'unconfirmed_email'])
+            update_fields.extend(['email', 'email_candidate'])
 
         self.email_confirmed = True
-        self.confirmed_at = timezone.now()
-        self.confirmation_token = None
-        self.confirmation_sent_at = None
+        self.email_confirmed_at = timezone.now()
+        self.email_confirmation_token = None
+        self.email_confirmation_sent_at = None
 
         update_fields.extend([
             'email_confirmed',
-            'confirmed_at',
-            'confirmation_sent_at',
-            'confirmation_token'
+            'email_confirmed_at',
+            'email_confirmation_token',
+            'email_confirmation_sent_at'
         ])
 
         self.save(update_fields=update_fields)
@@ -67,7 +68,7 @@ class ConfirmationMixin(models.Model):
     def __send_mail(self):
         message = EmailMessage(
             subject='Confirm your email',
-            body=f'your confirmation token is {self.confirmation_token}',
+            body=f'your confirmation token is {self.email_confirmation_token}',
             to=[self.email]
         )
         res = message.send(fail_silently=False)
@@ -82,8 +83,8 @@ class ConfirmationMixin(models.Model):
 
     @property
     def __is_token_valid(self):
-        if self.confirmation_sent_at is None:
+        if self.email_confirmation_sent_at is None:
             return False
 
-        diff = timezone.now() - self.confirmation_sent_at
+        diff = timezone.now() - self.email_confirmation_sent_at
         return diff <= timedelta(minutes=TOKEN_VALID_DURATION)
