@@ -18,7 +18,7 @@ class LoginSerializer(serializers.Serializer):
         attrs["request"] = self.context["request"]
         user = authenticate(**attrs)
 
-        if not self.has_perm(user) or not user.is_active:
+        if not user or not self.has_perm(user) or not user.is_active:
             raise exceptions.AuthenticationFailed
 
         if bool(

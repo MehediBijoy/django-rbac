@@ -11,19 +11,11 @@ class AccessTrackSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    user_type = serializers.CharField(source='get_user_type_display')
-    role = serializers.CharField(source='get_role_display')
-    state = serializers.CharField(source='get_status_display')
-    sign_in_count = serializers.IntegerField(
-        source='user_access_tracks.sign_in_count'
-    )
-
     class Meta:
         model = User
         fields = (
-            'id', 'email', 'user_type', 'state',
-            'status_reason', 'is_active', 'role',
-            'google_mfa_activated', 'sign_in_count', 'last_login',
+            'id', 'first_name', 'last_name', 'email', 'phone_number', 'status', 'status_reason',
+            'is_active', 'role', 'is_otp_active', 'last_login',
         )
 
 
@@ -35,7 +27,11 @@ class ChangeEmailSerializer(serializers.Serializer):
         validators=[
             UniqueValidator(
                 queryset=User.objects.all(),
+                lookup='iexact',
                 message='Email already exists'
             )
         ]
     )
+
+    def validate_email(self, value: str):
+        return str(value).lower() if value else value

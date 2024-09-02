@@ -8,15 +8,15 @@ from .email_confirmation import EmailConfirmationAPIView, AdminEmailConfirmation
 from .logout import LogoutView
 
 admin_urlpatterns = [
-    path('login', TokenObtainPairView.as_view(serializer_class=AdminLoginSerializer)),
-    path('email_confirmation', AdminEmailConfirmationAPIView.as_view())
+    path('login/', TokenObtainPairView.as_view(serializer_class=AdminLoginSerializer)),
+    path('email_confirmation/', AdminEmailConfirmationAPIView.as_view())
 ]
 
 urlpatterns = [
-    path('login', TokenObtainPairView.as_view(serializer_class=LoginSerializer)),
-    path('signup', RegisterAPIView.as_view()),
-    path('profile', ProfileAPIView.as_view()),
-    path('email_confirmation', EmailConfirmationAPIView.as_view()),
+    path('login/', TokenObtainPairView.as_view(serializer_class=LoginSerializer)),
+    path('signup/', RegisterAPIView.as_view()),
+    path('profile/', ProfileAPIView.as_view()),
+    path('email_confirmation/', EmailConfirmationAPIView.as_view()),
     path('admin/', include(admin_urlpatterns)),
-    path('logout', LogoutView.as_view())
+    path('logout/', LogoutView.as_view())
 ]
