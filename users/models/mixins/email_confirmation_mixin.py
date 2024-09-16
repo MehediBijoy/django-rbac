@@ -9,7 +9,7 @@ TOKEN_VALID_DURATION = 5
 
 
 class EmailConfirmationMixin(models.Model):
-    email: str
+    email: models.EmailField
     email_confirmed = models.BooleanField(default=False)
     email_confirmed_at = models.DateTimeField(null=True)
     email_confirmation_token = models.CharField(max_length=255, null=True, unique=True)

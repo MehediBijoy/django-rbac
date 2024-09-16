@@ -75,7 +75,7 @@ class User(
     is_superuser = models.BooleanField(default=False)
     joined_date = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
+    class Meta:  # type: ignore
         verbose_name = 'user'
         verbose_name_plural = 'users'
         ordering = ('-id',)
@@ -94,9 +94,9 @@ class User(
     def is_admin(self) -> bool:
         return not self.is_user
 
-    def write_log(self, log_type: str, payload=None, reference: Self = None):
-        self.user_logs.create(
+    def write_log(self, log_type: str, payload=None, reference: Self | None = None):
+        self.user_logs.create( # type: ignore
             type=log_type,
             payload=json.dumps(payload) if payload else None,
-            reference=reference if reference and reference.id != self.id else None
+            reference=reference if reference and reference != self else None
         )
