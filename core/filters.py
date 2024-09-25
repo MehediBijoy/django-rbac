@@ -19,9 +19,9 @@ class DefaultFieldExtractMixin:
             field_name: (self.extract_source_key(field.source.replace('.', '__') or field_name), field)
             for field_name, field in serializer_class(context=context).fields.items()
             if (
-                    not getattr(field, 'write_only', False) and
-                    not field.source == '*' and
-                    field.source not in model_property_names
+                not getattr(field, 'write_only', False) and
+                not field.source == '*' and
+                field.source not in model_property_names
             )
         }
 
@@ -106,44 +106,43 @@ class SearchFilter(
 ):
     search_param = 'search'
 
-    def query_params_build(self, lookups: LookupType, fields):
-        """
-        convert `query_params` to model field data type,
-        if data type is not convertable then just ignore it
-        """
-        query_params = dict()
+    def query_params_build(self, field_lookups: LookupType, params, search_fields: dict):
+        query_params = {}
 
-        for key, value in fields.items():
-            if key not in lookups:
+        for key, value in params.items():
+            lookup = field_lookups.get(key)
+            if lookup is None:
                 continue
 
-            _, field = lookups[key]
-            try:
-                parsed_value = field.to_internal_value(value)
-            except (Exception, ValidationError):
-                pass
-            else:
-                query_params[key] = parsed_value
+            parsed_value = self._convert_value(lookup[1], value)
+
+            if parsed_value or search_fields.get(key):
+                query_params[key] = parsed_value or value
 
         return query_params
 
-    def map_fields_with_lookups(self, queryset, params: dict[str, str], view, request):
-        fields_lookup = self.build_fields_lookup(queryset, view, {'request': request})
-        query_params = self.query_params_build(fields_lookup, params)
+    def _convert_value(self, field: Field, value):
+        try:
+            return field.to_internal_value(value)
+        except (ValidationError, ValueError):
+            return
 
-        lookups = {key: value[0] for key, value in fields_lookup.items()}
+    def map_fields_with_lookups(self, queryset, params: dict[str, str], view, request) -> list[tuple[str, any]]:
+        """
+        Maps query parameters to the appropriate lookup fields and values.
+        """
+        # Get the lookups for search fields specified in the view
+        search_fields = self.get_searching_lookups_map(view)
 
-        search_fields_lookups_map = self.get_searching_lookups_map(view)
+        field_lookups = self.build_fields_lookup(queryset, view, {'request': request})
+        query_params = self.query_params_build(field_lookups, params, search_fields)
 
-        assert isinstance(
-            search_fields_lookups_map, dict
-        ), 'search_fields_lookups_map should be dict'
-
-        lookups.update(search_fields_lookups_map)
+        # Update with the view-specific search field lookups
+        combined_lookups = {**{key: lookup[0] for key, lookup in field_lookups.items()}, **search_fields}
 
         return [
-            (lookups[key], value) for key, value in query_params.items()
-            if key in lookups
+            (combined_lookups[key], value) for key, value in query_params.items()
+            if key in combined_lookups
         ]
 
     def filter_queryset(self, request, queryset, view):
@@ -166,4 +165,10 @@ class SearchFilter(
         it looking for `email__icontains=admin`
         For first level of serializer all fields work auto
         """
-        return getattr(view, 'search_fields_lookups_map', {})
+        mapper = getattr(view, 'search_fields_lookups_map', {})
+
+        assert isinstance(
+            mapper, dict
+        ), 'search_fields_lookups_map should be dict'
+
+        return mapper
