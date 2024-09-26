@@ -1,5 +1,6 @@
 from rest_framework import filters
 from rest_framework.fields import Field
+from rest_framework.serializers import ManyRelatedField
 from rest_framework.exceptions import ValidationError
 
 LookupType = dict[str, tuple[str, Field]]
@@ -16,7 +17,7 @@ class DefaultFieldExtractMixin:
         ]
 
         return {
-            field_name: (self.extract_source_key(field.source.replace('.', '__') or field_name), field)
+            field_name: (self.build_key(field, field.source.replace('.', '__') or field_name), field)
             for field_name, field in serializer_class(context=context).fields.items()
             if (
                 not getattr(field, 'write_only', False) and
@@ -25,9 +26,13 @@ class DefaultFieldExtractMixin:
             )
         }
 
-    def extract_source_key(self, value: str):
+    def build_key(self, field: Field, value: str):
         if value.startswith('get_') and value.endswith('_display'):
-            return value.removeprefix('get_').removesuffix('_display')
+            value = value.removeprefix('get_').removesuffix('_display')
+
+        if isinstance(field, ManyRelatedField):
+            return f'{value}__in'
+
         return value
 
 
@@ -121,7 +126,10 @@ class SearchFilter(
 
         return query_params
 
-    def _convert_value(self, field: Field, value):
+    def _convert_value(self, field: Field, value: str):
+        if isinstance(field, ManyRelatedField):
+            value = value.split(',') if value else []
+
         try:
             return field.to_internal_value(value)
         except (ValidationError, ValueError):
@@ -149,8 +157,9 @@ class SearchFilter(
         query_fields = self.map_fields_with_lookups(
             queryset, request.query_params, view, request
         )
+
         if query_fields:
-            return queryset.filter(**dict(query_fields))
+            queryset = queryset.filter(**dict(query_fields))
 
         return super().filter_queryset(request, queryset, view)
 
@@ -165,10 +174,15 @@ class SearchFilter(
         it looking for `email__icontains=admin`
         For first level of serializer all fields work auto
         """
-        mapper = getattr(view, 'search_fields_lookups_map', {})
+        search_fields = getattr(view, 'search_fields_lookups_map', {})
 
         assert isinstance(
-            mapper, dict
+            search_fields, dict
         ), 'search_fields_lookups_map should be dict'
 
-        return mapper
+        return search_fields
+
+    def get_schema_fields(self, view):
+        if self.get_search_fields(view, None):
+            return super().get_schema_fields(view)
+        return []
